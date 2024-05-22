@@ -1,26 +1,31 @@
-<!--
-Avoid using this README file for information that is maintained or published elsewhere, e.g.:
+# Airbyte UI K8s Operator
 
-* metadata.yaml > published on Charmhub
-* documentation > published on (or linked to from) Charmhub
-* detailed contribution guide > documentation or CONTRIBUTING.md
+This is the Kubernetes Python Operator for the
+[Airybte web UI](https://airbyte.com/).
 
-Use links instead.
--->
+## Description
 
-# airbyte-ui-k8s-operator
+Airbyte is an open-source data integration platform designed to centralize and
+streamline the process of extracting and loading data from various sources into
+data warehouses, lakes, or other destinations.
 
-Charmhub package name: operator-template
-More information: https://charmhub.io/airbyte-ui-k8s-operator
+This operator provides the Airbyte web UI, and consists of Python scripts which
+wraps the versions distributed by
+[airbyte](https://hub.docker.com/r/airbyte/webapp).
 
-Describe your charm in one or two sentences.
+## Usage
 
-## Other resources
+Please check the [Airbyte server operator](https://charmhub.io/airbyte-k8s) for
+usage instructions.
 
-<!-- If your charm is documented somewhere else other than Charmhub, provide a link separately. -->
+## Contributing
 
-- [Read more](https://example.com)
+This charm is still in active development. Please see the
+[Juju SDK docs](https://juju.is/docs/sdk) for guidelines on enhancements to this
+charm following best practice guidelines, and `CONTRIBUTING.md` for developer
+guidance.
 
-- [Contributing](CONTRIBUTING.md) <!-- or link to other contribution documentation -->
+## License
 
-- See the [Juju SDK documentation](https://juju.is/docs/sdk) for more information about developing and improving charms.
+The Charmed Airbyte UI K8s Operator is free software, distributed under the
+Apache Software License, version 2.0. See [License](LICENSE) for more details.
