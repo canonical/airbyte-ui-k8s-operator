@@ -6,6 +6,7 @@
 
 import logging
 
+from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from log import log_event_handler
 from ops import main, pebble
 from ops.charm import CharmBase
@@ -16,10 +17,17 @@ from state import State
 logger = logging.getLogger(__name__)
 
 WEB_UI_PORT = 8080
+INTERNAL_API_PORT = 8001
+CONNECTOR_BUILDER_API_PORT = 80
 
 
 class AirbyteUIK8sOperatorCharm(CharmBase):
     """Charm the application."""
+
+    @property
+    def external_hostname(self):
+        """Return the DNS listing used for external connections."""
+        return self.config["external-hostname"] or self.app.name
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -29,6 +37,20 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         self.framework.observe(self.on[self.name].pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.update_status, self._on_update_status)
         self.framework.observe(self.on.restart_action, self._on_restart)
+
+        # Handle Ingress.
+        self._require_nginx_route()
+
+    def _require_nginx_route(self):
+        """Require nginx-route relation based on current configuration."""
+        require_nginx_route(
+            charm=self,
+            service_hostname=self.external_hostname,
+            service_name=self.app.name,
+            service_port=WEB_UI_PORT,
+            tls_secret_name=self.config["tls-secret-name"],
+            backend_protocol="HTTP",
+        )
 
     @log_event_handler(logger)
     def _on_pebble_ready(self, event):
@@ -98,8 +120,8 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         context = {
             "API_URL": "/api/v1/",
             "AIRBYTE_EDITION": "community",
-            "INTERNAL_API_HOST": "airbyte-k8s:8001",
-            "CONNECTOR_BUILDER_API_HOST": "airbyte-k8s:80",
+            "INTERNAL_API_HOST": f"airbyte-k8s:{INTERNAL_API_PORT}",
+            "CONNECTOR_BUILDER_API_HOST": f"airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}",
             "KEYCLOAK_INTERNAL_HOST": "localhost",
         }
 
