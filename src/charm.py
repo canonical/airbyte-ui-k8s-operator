@@ -1,103 +1,141 @@
 #!/usr/bin/env python3
-# Copyright 2024 Ali
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-#
-# Learn more at: https://juju.is/docs/sdk
 
-"""Charm the service.
-
-Refer to the following tutorial that will help you
-develop a new k8s charm using the Operator Framework:
-
-https://juju.is/docs/sdk/create-a-minimal-kubernetes-charm
-"""
+"""Charm definition and helpers."""
 
 import logging
 
-import ops
+from log import log_event_handler
+from ops import main, pebble
+from ops.charm import CharmBase
+from ops.model import ActiveStatus, MaintenanceStatus
+from ops.pebble import CheckStatus
+from state import State
 
-# Log messages can be retrieved using juju debug-log
 logger = logging.getLogger(__name__)
 
-VALID_LOG_LEVELS = ["info", "debug", "warning", "error", "critical"]
+WEB_UI_PORT = 8080
 
 
-class AirbyteUiK8SOperatorCharm(ops.CharmBase):
-    """Charm the service."""
+class AirbyteUIK8sOperatorCharm(CharmBase):
+    """Charm the application."""
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.framework.observe(self.on['httpbin'].pebble_ready, self._on_httpbin_pebble_ready)
-        self.framework.observe(self.on.config_changed, self._on_config_changed)
+        self._state = State(self.app, lambda: self.model.get_relation("peer"))
 
-    def _on_httpbin_pebble_ready(self, event: ops.PebbleReadyEvent):
-        """Define and start a workload using the Pebble API.
+        self.name = "airbyte-webapp"
+        self.framework.observe(self.on[self.name].pebble_ready, self._on_pebble_ready)
+        self.framework.observe(self.on.update_status, self._on_update_status)
+        self.framework.observe(self.on.restart_action, self._on_restart)
 
-        Change this example to suit your needs. You'll need to specify the right entrypoint and
-        environment configuration for your specific workload.
+    @log_event_handler(logger)
+    def _on_pebble_ready(self, event):
+        """Handle pebble-ready event."""
+        self._update(event)
 
-        Learn more about interacting with Pebble at at https://juju.is/docs/sdk/pebble.
+    @log_event_handler(logger)
+    def _on_update_status(self, event):
+        """Handle `update-status` events.
+
+        Args:
+            event: The `update-status` event triggered at intervals.
         """
-        # Get a reference the container attribute on the PebbleReadyEvent
-        container = event.workload
-        # Add initial Pebble config layer using the Pebble API
-        container.add_layer("httpbin", self._pebble_layer, combine=True)
-        # Make Pebble reevaluate its plan, ensuring any services are started if enabled.
-        container.replan()
-        # Learn more about statuses in the SDK docs:
-        # https://juju.is/docs/sdk/constructs#heading--statuses
-        self.unit.status = ops.ActiveStatus()
+        container = self.unit.get_container(self.name)
+        valid_pebble_plan = self._validate_pebble_plan(container)
+        if not valid_pebble_plan:
+            self._update(event)
+            return
 
-    def _on_config_changed(self, event: ops.ConfigChangedEvent):
-        """Handle changed configuration.
+        check = container.get_check("up")
+        if check.status != CheckStatus.UP:
+            self.unit.status = MaintenanceStatus("Status check: DOWN")
+            return
 
-        Change this example to suit your needs. If you don't need to handle config, you can remove
-        this method.
+        self.unit.status = ActiveStatus()
 
-        Learn more about config at https://juju.is/docs/sdk/config
+    def _validate_pebble_plan(self, container):
+        """Validate pebble plan.
+
+        Args:
+            container: application container
+
+        Returns:
+            bool of pebble plan validity
         """
-        # Fetch the new config value
-        log_level = self.model.config["log-level"].lower()
+        try:
+            plan = container.get_plan().to_dict()
+            return bool(plan["services"][self.name]["on-check-failure"])
+        except (KeyError, pebble.ConnectionError):
+            return False
 
-        # Do some validation of the configuration option
-        if log_level in VALID_LOG_LEVELS:
-            # The config is good, so update the configuration of the workload
-            container = self.unit.get_container("httpbin")
-            # Verify that we can connect to the Pebble API in the workload container
-            if container.can_connect():
-                # Push an updated layer with the new config
-                container.add_layer("httpbin", self._pebble_layer, combine=True)
-                container.replan()
+    def _on_restart(self, event):
+        """Restart Airbyte ui action handler.
 
-                logger.debug("Log level for gunicorn changed to '%s'", log_level)
-                self.unit.status = ops.ActiveStatus()
-            else:
-                # We were unable to connect to the Pebble API, so we defer this event
-                event.defer()
-                self.unit.status = ops.WaitingStatus("waiting for Pebble API")
-        else:
-            # In this case, the config option is bad, so block the charm and notify the operator.
-            self.unit.status = ops.BlockedStatus("invalid log level: '{log_level}'")
+        Args:
+            event:The event triggered by the restart action
+        """
+        container = self.unit.get_container(self.name)
+        if not container.can_connect():
+            event.defer()
+            return
 
-    @property
-    def _pebble_layer(self) -> ops.pebble.LayerDict:
-        """Return a dictionary representing a Pebble layer."""
-        return {
-            "summary": "httpbin layer",
-            "description": "pebble config layer for httpbin",
+        self.unit.status = MaintenanceStatus("restarting application")
+        container.restart(self.name)
+
+        event.set_results({"result": "UI successfully restarted"})
+
+    @log_event_handler(logger)
+    def _update(self, event):
+        """Update the Airbyte UI configuration and replan its execution.
+
+        Args:
+            event: The event triggered when the relation changed.
+        """
+        # TODO (kelkawi-a): validate presence of Airbyte server relation
+        # TODO (kelkawi-a): update this to get server application name through charm relation
+        context = {
+            "API_URL": "/api/v1/",
+            "AIRBYTE_EDITION": "community",
+            "INTERNAL_API_HOST": "airbyte-k8s:8001",
+            "CONNECTOR_BUILDER_API_HOST": "airbyte-k8s:80",
+            "KEYCLOAK_INTERNAL_HOST": "localhost",
+        }
+
+        self.model.unit.set_ports(WEB_UI_PORT)
+        container = self.unit.get_container(self.name)
+        if not container.can_connect():
+            event.defer()
+            return
+
+        pebble_layer = {
+            "summary": "airbyte layer",
             "services": {
-                "httpbin": {
-                    "override": "replace",
-                    "summary": "httpbin",
-                    "command": "gunicorn -b 0.0.0.0:80 httpbin:app -k gevent",
+                self.name: {
+                    "summary": self.name,
+                    "command": "./docker-entrypoint.sh nginx",
                     "startup": "enabled",
-                    "environment": {
-                        "GUNICORN_CMD_ARGS": f"--log-level {self.model.config['log-level']}"
-                    },
+                    "override": "replace",
+                    # Including config values here so that a change in the
+                    # config forces replanning to restart the service.
+                    "environment": context,
+                    "on-check-failure": {"up": "ignore"},
+                },
+            },
+            "checks": {
+                "up": {
+                    "override": "replace",
+                    "period": "10s",
+                    "http": {"url": f"http://localhost:{WEB_UI_PORT}"},
                 }
             },
         }
+        container.add_layer(self.name, pebble_layer, combine=True)
+        container.replan()
+
+        self.unit.status = MaintenanceStatus("replanning application")
 
 
 if __name__ == "__main__":  # pragma: nocover
-    ops.main(AirbyteUiK8SOperatorCharm)  # type: ignore
+    main.main(AirbyteUIK8sOperatorCharm)  # type: ignore
