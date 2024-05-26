@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 WEB_UI_PORT = 8080
 
 
-class AirbyteK8SOperatorCharm(CharmBase):
+class AirbyteUIK8sOperatorCharm(CharmBase):
     """Charm the application."""
 
     def __init__(self, *args):
@@ -83,7 +83,6 @@ class AirbyteK8SOperatorCharm(CharmBase):
 
         self.unit.status = MaintenanceStatus("restarting application")
         container.restart(self.name)
-        self.unit.status = ActiveStatus()
 
         event.set_results({"result": "UI successfully restarted"})
 
@@ -104,7 +103,7 @@ class AirbyteK8SOperatorCharm(CharmBase):
             "KEYCLOAK_INTERNAL_HOST": "localhost",
         }
 
-        self.model.unit.set_ports(8080)
+        self.model.unit.set_ports(WEB_UI_PORT)
         container = self.unit.get_container(self.name)
         if not container.can_connect():
             event.defer()
@@ -114,7 +113,7 @@ class AirbyteK8SOperatorCharm(CharmBase):
             "summary": "airbyte layer",
             "services": {
                 self.name: {
-                    "summary": "airbyte webapp",
+                    "summary": self.name,
                     "command": "./docker-entrypoint.sh nginx",
                     "startup": "enabled",
                     "override": "replace",
@@ -139,4 +138,4 @@ class AirbyteK8SOperatorCharm(CharmBase):
 
 
 if __name__ == "__main__":  # pragma: nocover
-    main.main(AirbyteK8SOperatorCharm)  # type: ignore
+    main.main(AirbyteUIK8sOperatorCharm)  # type: ignore
