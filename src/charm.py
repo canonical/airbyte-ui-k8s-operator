@@ -10,8 +10,9 @@ from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from log import log_event_handler
 from ops import main, pebble
 from ops.charm import CharmBase
-from ops.model import ActiveStatus, MaintenanceStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 from ops.pebble import CheckStatus
+from relations.airbyte_server import AirbyteServer
 from state import State
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,10 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         self.framework.observe(self.on[self.name].pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.update_status, self._on_update_status)
         self.framework.observe(self.on.restart_action, self._on_restart)
+        self.framework.observe(self.on.peer_relation_changed, self._on_peer_relation_changed)
+
+        # Handle Airbyte server relation
+        self.airbyte_server = AirbyteServer(self)
 
         # Handle Ingress.
         self._require_nginx_route()
@@ -55,6 +60,15 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
     @log_event_handler(logger)
     def _on_pebble_ready(self, event):
         """Handle pebble-ready event."""
+        self._update(event)
+
+    @log_event_handler(logger)
+    def _on_peer_relation_changed(self, event):
+        """Handle peer relation changed event.
+
+        Args:
+            event: The event triggered when the relation changed.
+        """
         self._update(event)
 
     @log_event_handler(logger)
@@ -108,6 +122,21 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
 
         event.set_results({"result": "UI successfully restarted"})
 
+    def _validate(self):
+        """Validate that configuration and relations are valid and ready.
+
+        Raises:
+            ValueError: in case of invalid configuration.
+        """
+        if not self._state.is_ready():
+            raise ValueError("peer relation not ready")
+
+        if not self._state.airbyte_server:
+            raise ValueError("airbyte-server relation: not available")
+
+        if not self._state.airbyte_server["status"] == "ready":
+            raise ValueError("airbyte-server relation: server is not ready")
+
     @log_event_handler(logger)
     def _update(self, event):
         """Update the Airbyte UI configuration and replan its execution.
@@ -115,13 +144,18 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         Args:
             event: The event triggered when the relation changed.
         """
-        # TODO (kelkawi-a): validate presence of Airbyte server relation
-        # TODO (kelkawi-a): update this to get server application name through charm relation
+        try:
+            self._validate()
+        except ValueError as err:
+            self.unit.status = BlockedStatus(str(err))
+            return
+
+        server_svc = self._state.airbyte_server["name"]
         context = {
             "API_URL": "/api/v1/",
             "AIRBYTE_EDITION": "community",
-            "INTERNAL_API_HOST": f"airbyte-k8s:{INTERNAL_API_PORT}",
-            "CONNECTOR_BUILDER_API_HOST": f"airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}",
+            "INTERNAL_API_HOST": f"{server_svc}:{INTERNAL_API_PORT}",
+            "CONNECTOR_BUILDER_API_HOST": f"{server_svc}:{CONNECTOR_BUILDER_API_PORT}",
             "KEYCLOAK_INTERNAL_HOST": "localhost",
         }
 
