@@ -33,6 +33,10 @@ requires:
     interface: nginx-route
     limit: 1
 
+  airbyte-server:
+    interface: airbyte-server
+    limit: 1
+
 # (Optional) Configuration options for the charm
 # This config section defines charm config options, and populates the Configure
 # tab on Charmhub.
