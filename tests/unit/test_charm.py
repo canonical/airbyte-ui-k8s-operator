@@ -10,11 +10,11 @@
 
 from unittest import TestCase, mock
 
-from charm import AirbyteUIK8sOperatorCharm
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 from ops.pebble import CheckStatus
 from ops.testing import Harness
 
+from charm import AirbyteUIK8sOperatorCharm
 from src.charm import CONNECTOR_BUILDER_API_PORT, INTERNAL_API_PORT, WEB_UI_PORT
 
 APP_NAME = "airbyte-webapp"

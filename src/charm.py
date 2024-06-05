@@ -7,11 +7,12 @@
 import logging
 
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
-from log import log_event_handler
 from ops import main, pebble
 from ops.charm import CharmBase
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 from ops.pebble import CheckStatus
+
+from log import log_event_handler
 from relations.airbyte_server import AirbyteServer
 from state import State
 
@@ -23,7 +24,12 @@ CONNECTOR_BUILDER_API_PORT = 80
 
 
 class AirbyteUIK8sOperatorCharm(CharmBase):
-    """Charm the application."""
+    """Airbyte UI charm.
+
+    Attrs:
+        _state: used to store data that is persisted across invocations.
+        external_hostname: DNS listing used for external connections.
+    """
 
     @property
     def external_hostname(self):
@@ -31,6 +37,11 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         return self.config["external-hostname"] or self.app.name
 
     def __init__(self, *args):
+        """Construct.
+
+        Args:
+            args: Ignore.
+        """
         super().__init__(*args)
         self._state = State(self.app, lambda: self.model.get_relation("peer"))
 
@@ -59,7 +70,11 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
 
     @log_event_handler(logger)
     def _on_pebble_ready(self, event):
-        """Handle pebble-ready event."""
+        """Handle pebble ready event.
+
+        Args:
+            event: The event triggered when the relation changed.
+        """
         self._update(event)
 
     @log_event_handler(logger)
