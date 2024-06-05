@@ -78,6 +78,11 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         Args:
             event: The `update-status` event triggered at intervals.
         """
+        try:
+            self._validate()
+        except ValueError:
+            return
+
         container = self.unit.get_container(self.name)
         valid_pebble_plan = self._validate_pebble_plan(container)
         if not valid_pebble_plan:
@@ -154,8 +159,10 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         context = {
             "API_URL": "/api/v1/",
             "AIRBYTE_EDITION": "community",
+            "AIRBYTE_SERVER_HOST": f"{server_svc}:{INTERNAL_API_PORT}",
             "INTERNAL_API_HOST": f"{server_svc}:{INTERNAL_API_PORT}",
             "CONNECTOR_BUILDER_API_HOST": f"{server_svc}:{CONNECTOR_BUILDER_API_PORT}",
+            "CONNECTOR_BUILDER_API_URL": "/connector-builder-api",
             "KEYCLOAK_INTERNAL_HOST": "localhost",
         }
 

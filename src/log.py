@@ -31,6 +31,7 @@ def log_event_handler(logger):
             """Log decorator method.
 
             Args:
+                self: self
                 event: The event triggered when the relation changes.
 
             Returns:
