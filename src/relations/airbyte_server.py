@@ -5,8 +5,9 @@
 
 import logging
 
-from log import log_event_handler
 from ops import framework
+
+from log import log_event_handler
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +23,9 @@ class AirbyteServer(framework.Object):
         """
         super().__init__(charm, "airbyte-server")
         self.charm = charm
-        charm.framework.observe(
-            charm.on.airbyte_server_relation_joined, self._on_airbyte_server_relation_changed
-        )
-        charm.framework.observe(
-            charm.on.airbyte_server_relation_changed, self._on_airbyte_server_relation_changed
-        )
-        charm.framework.observe(
-            charm.on.airbyte_server_relation_broken, self._on_airbyte_server_relation_broken
-        )
+        charm.framework.observe(charm.on.airbyte_server_relation_joined, self._on_airbyte_server_relation_changed)
+        charm.framework.observe(charm.on.airbyte_server_relation_changed, self._on_airbyte_server_relation_changed)
+        charm.framework.observe(charm.on.airbyte_server_relation_broken, self._on_airbyte_server_relation_broken)
 
     @log_event_handler(logger)
     def _on_airbyte_server_relation_changed(self, event):
