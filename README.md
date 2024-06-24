@@ -1,7 +1,7 @@
 # Airbyte UI K8s Operator
 
 This is the Kubernetes Python Operator for the
-[Airybte web UI](https://airbyte.com/).
+[Airbyte web UI](https://airbyte.com/).
 
 ## Description
 
@@ -11,7 +11,7 @@ data warehouses, lakes, or other destinations.
 
 This operator provides the Airbyte web UI, and consists of Python scripts which
 wraps the versions distributed by
-[airbyte](https://hub.docker.com/r/airbyte/webapp).
+[Airbyte](https://hub.docker.com/r/airbyte/webapp).
 
 ## Usage
 
