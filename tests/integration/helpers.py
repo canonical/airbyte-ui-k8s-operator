@@ -164,3 +164,5 @@ async def perform_airbyte_integrations(ops_test: OpsTest):
 
     assert ops_test.model.applications[APP_NAME_AIRBYTE_SERVER].units[0].workload_status == "active"
     assert ops_test.model.applications[APP_NAME_AIRBYTE_UI].units[0].workload_status == "active"
+
+    await run_sample_workflow(ops_test)
