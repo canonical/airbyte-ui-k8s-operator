@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 WEB_UI_PORT = 8080
 INTERNAL_API_PORT = 8001
 CONNECTOR_BUILDER_API_PORT = 80
+AIRBYTE_VERSION = "0.60.0"
 
 
 class AirbyteUIK8sOperatorCharm(CharmBase):
@@ -109,6 +110,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             self.unit.status = MaintenanceStatus("Status check: DOWN")
             return
 
+        self.unit.set_workload_version(f"v{AIRBYTE_VERSION}")
         self.unit.status = ActiveStatus()
 
     def _validate_pebble_plan(self, container):
