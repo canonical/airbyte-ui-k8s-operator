@@ -9,19 +9,21 @@ import logging
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from ops import main, pebble
 from ops.charm import CharmBase
-from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.pebble import CheckStatus
 
+from literals import (
+    AIRBYTE_SERVER_RELATION,
+    AIRBYTE_VERSION,
+    CONNECTOR_BUILDER_API_PORT,
+    INTERNAL_API_PORT,
+    WEB_UI_PORT,
+)
 from log import log_event_handler
 from relations.airbyte_server import AirbyteServer
 from state import State
 
 logger = logging.getLogger(__name__)
-
-WEB_UI_PORT = 8080
-INTERNAL_API_PORT = 8001
-CONNECTOR_BUILDER_API_PORT = 80
-AIRBYTE_VERSION = "0.60.0"
 
 
 class AirbyteUIK8sOperatorCharm(CharmBase):
@@ -51,6 +53,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         self.framework.observe(self.on.update_status, self._on_update_status)
         self.framework.observe(self.on.restart_action, self._on_restart)
         self.framework.observe(self.on.peer_relation_changed, self._on_peer_relation_changed)
+        self.framework.observe(self.on.config_changed, self._on_config_changed)
 
         # Handle Airbyte server relation
         self.airbyte_server = AirbyteServer(self)
@@ -85,6 +88,16 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         Args:
             event: The event triggered when the relation changed.
         """
+        self._update(event)
+
+    @log_event_handler(logger)
+    def _on_config_changed(self, event):
+        """Handle changed configuration.
+
+        Args:
+            event: The event triggered when the relation changed.
+        """
+        self.unit.status = WaitingStatus("configuring application")
         self._update(event)
 
     @log_event_handler(logger)
@@ -154,10 +167,10 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             raise ValueError("peer relation not ready")
 
         if not self._state.airbyte_server:
-            raise ValueError("airbyte-server relation: not available")
+            raise ValueError(f"{AIRBYTE_SERVER_RELATION} relation: not available")
 
         if not self._state.airbyte_server["status"] == "ready":
-            raise ValueError("airbyte-server relation: server is not ready")
+            raise ValueError(f"{AIRBYTE_SERVER_RELATION} relation: server is not ready")
 
     @log_event_handler(logger)
     def _update(self, event):
