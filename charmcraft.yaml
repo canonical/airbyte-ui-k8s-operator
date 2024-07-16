@@ -17,6 +17,10 @@ description: |
   to view and configure different connections.
 links: 
   documentation: https://discourse.charmhub.io/t/charmed-airbyte-ui-k8s-overview/14529
+  source:
+    - https://github.com/canonical/airbyte-ui-k8s-operator
+  issues:
+    - https://github.com/canonical/airbyte-ui-k8s-operator/issues
 
 # (Required for 'charm' type)
 bases:

@@ -7,6 +7,7 @@ import logging
 
 from ops import framework
 
+from literals import AIRBYTE_SERVER_RELATION
 from log import log_event_handler
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class AirbyteServer(framework.Object):
         Args:
             charm: The charm to attach the hooks to.
         """
-        super().__init__(charm, "airbyte-server")
+        super().__init__(charm, AIRBYTE_SERVER_RELATION)
         self.charm = charm
         charm.framework.observe(charm.on.airbyte_server_relation_joined, self._on_airbyte_server_relation_changed)
         charm.framework.observe(charm.on.airbyte_server_relation_changed, self._on_airbyte_server_relation_changed)

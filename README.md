@@ -1,3 +1,6 @@
+[![Charmhub Badge](https://charmhub.io/airbyte-ui-k8s/badge.svg)](https://charmhub.io/airbyte-ui-k8s)
+[![Release Edge](https://github.com/canonical/airbyte-ui-k8s-operator/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/airbyte-ui-k8s-operator/actions/workflows/publish_charm.yaml)
+
 # Airbyte UI K8s Operator
 
 This is the Kubernetes Python Operator for the
