@@ -88,4 +88,3 @@ resources:
   airbyte-webapp:
     type: oci-image
     description: OCI image for Airbyte web UI
-    upstream-source: airbyte/webapp:0.60.0

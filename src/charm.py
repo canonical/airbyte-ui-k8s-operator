@@ -194,6 +194,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "CONNECTOR_BUILDER_API_HOST": f"{server_svc}:{CONNECTOR_BUILDER_API_PORT}",
             "CONNECTOR_BUILDER_API_URL": "/connector-builder-api",
             "KEYCLOAK_INTERNAL_HOST": "localhost",
+            "PORT": WEB_UI_PORT,
         }
 
         self.model.unit.set_ports(WEB_UI_PORT)
@@ -207,7 +208,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "./docker-entrypoint.sh nginx",
+                    "command": "cd app/ && pnpm start",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the

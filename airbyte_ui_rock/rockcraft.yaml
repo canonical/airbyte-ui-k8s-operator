@@ -1,0 +1,63 @@
+# Copyright 2024 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: airbyte-ui
+summary: Airbyte UI rock
+description: Airbyte UI OCI image for the Airbyte UI charm
+version: "1.0"
+base: ubuntu@22.04
+build-base: ubuntu@22.04
+license: Apache-2.0
+platforms:
+  amd64:
+
+services:
+  airbyte-webapp:
+    override: replace
+    summary: "airbyte-webapp service"
+    startup: disabled
+    command: "cd app && pnpm start"
+    environment:
+      PORT: "8080"
+
+# Please refer to
+# https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
+# for more information about shared user.
+# The UID 584792 corresponds to _daemon_ user.
+run_user: _daemon_
+
+parts:
+  airbyte-webapp:
+    plugin: dump
+    source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
+    source-type: git
+    source-commit: 34d28a9a8d3092a7e22eec6562946e6ef6ca36ab # v0.60.0
+    build-packages:
+      - gradle
+      - openjdk-21-jdk
+      - jq
+      - curl
+      - nodejs
+      - npm
+      - coreutils
+      - bash
+    override-build: |
+      curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+      source ~/.bashrc
+      npm install -g pnpm
+      cd airbyte-webapp
+      nvm install
+      corepack enable && corepack install
+      pnpm install
+
+      pnpm run build
+
+      # Copy current directory files to app
+      cp -r build ${CRAFT_PART_INSTALL}/airbyte-webapp
+    stage:
+      - airbyte-webapp
+    permissions:
+      - path: airbyte-webapp
+        owner: 584792
+        group: 584792
+        mode: "755"

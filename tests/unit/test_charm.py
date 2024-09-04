@@ -130,7 +130,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "./docker-entrypoint.sh nginx",
+                    "command": "cd app/ && pnpm start",
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
@@ -141,6 +141,7 @@ class TestCharm(TestCase):
                         "INTERNAL_API_HOST": f"airbyte-k8s:{INTERNAL_API_PORT}",
                         "CONNECTOR_BUILDER_API_HOST": f"airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}",
                         "KEYCLOAK_INTERNAL_HOST": "localhost",
+                        "PORT": 8080,
                     },
                     "on-check-failure": {"up": "ignore"},
                 }
