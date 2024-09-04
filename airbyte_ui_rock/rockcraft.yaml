@@ -16,7 +16,7 @@ services:
     override: replace
     summary: "airbyte-webapp service"
     startup: disabled
-    command: "cd app && pnpm start"
+    command: "/usr/bin/pnpm -C airbyte-webapp start"
     environment:
       PORT: "8080"
 
@@ -33,8 +33,6 @@ parts:
     source-type: git
     source-commit: 34d28a9a8d3092a7e22eec6562946e6ef6ca36ab # v0.60.0
     build-packages:
-      - gradle
-      - openjdk-21-jdk
       - jq
       - curl
       - nodejs
@@ -44,20 +42,59 @@ parts:
     override-build: |
       curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
       source ~/.bashrc
-      npm install -g pnpm
       cd airbyte-webapp
       nvm install
-      corepack enable && corepack install
-      pnpm install
+      npm install -g pnpm@8.6.12 --force
+      # corepack enable && corepack install
+      # corepack install --global pnpm@8.6.12
 
+      # Programmatically update vite.config.mts to set https: false
+      if grep -q "https:" vite.config.mts; then
+        # Modify the existing https setting
+        sed -i 's/https: true/https: false/' vite.config.mts
+      else
+        # Add https: false to the server section if not present
+        sed -i '/server: {/a\    https: false,' vite.config.mts
+      fi
+
+      pnpm install
       pnpm run build
 
-      # Copy current directory files to app
-      cp -r build ${CRAFT_PART_INSTALL}/airbyte-webapp
+      mkdir -p ${CRAFT_PART_INSTALL}/bin ${CRAFT_PART_INSTALL}/lib
+
+      # Copy build directory files to app
+      cp -r . ${CRAFT_PART_INSTALL}/airbyte-webapp
+      cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
+      cp -r /root/.nvm/versions/node/v20.11.0/bin/node ${CRAFT_PART_INSTALL}/node
+      cp -r /root/.nvm/versions/node/v20.11.0/bin/pnpm ${CRAFT_PART_INSTALL}/pnpm
+      cp -r /root/.nvm/versions/node/v20.11.0/lib ${CRAFT_PART_INSTALL}/
+    organize:
+      node: bin/node
+      pnpm: bin/pnpm
     stage:
       - airbyte-webapp
-    permissions:
-      - path: airbyte-webapp
-        owner: 584792
-        group: 584792
-        mode: "755"
+      - airbyte-connector-builder-resources
+      - bin/node
+      - bin/pnpm
+      - lib
+    # permissions:
+    #   - path: airbyte-webapp
+    #     owner: 584792
+    #     group: 584792
+    #     mode: "755"
+    #   - path: airbyte-connector-builder-resources
+    #     owner: 584792
+    #     group: 584792
+    #     mode: "755"
+    #   - path: bin/node
+    #     owner: 584792
+    #     group: 584792
+    #     mode: "755"
+    #   - path: bin/pnpm
+    #     owner: 584792
+    #     group: 584792
+    #     mode: "755"
+    #   - path: lib
+    #     owner: 584792
+    #     group: 584792
+    #     mode: "755"

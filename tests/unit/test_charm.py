@@ -130,7 +130,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "cd app/ && pnpm start",
+                    "command": "/usr/bin/pnpm -C airbyte-webapp start",
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
