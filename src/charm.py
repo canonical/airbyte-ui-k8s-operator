@@ -208,7 +208,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "cd app/ && pnpm start",
+                    "command": "pnpm -C app start",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the
