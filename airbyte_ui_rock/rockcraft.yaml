@@ -20,14 +20,19 @@ services:
     environment:
       PORT: "8080"
 
-# Please refer to
-# https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
-# for more information about shared user.
-# The UID 584792 corresponds to _daemon_ user.
-run_user: _daemon_
-
 parts:
+  patches:
+    plugin: dump
+    source: ./patches
+    organize:
+      vite-config-http.patch: patches/vite-config-http.patch
+    stage:
+      - patches/vite-config-http.patch
+    prime:
+      - "-*"
+
   airbyte-webapp:
+    after: [patches]
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
     source-type: git
@@ -40,22 +45,13 @@ parts:
       - coreutils
       - bash
     override-build: |
+      git apply ${CRAFT_STAGE}/patches/*.patch
+
       curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
       source ~/.bashrc
       cd airbyte-webapp
       nvm install
       npm install -g pnpm@8.6.12 --force
-      # corepack enable && corepack install
-      # corepack install --global pnpm@8.6.12
-
-      # Programmatically update vite.config.mts to set https: false
-      if grep -q "https:" vite.config.mts; then
-        # Modify the existing https setting
-        sed -i 's/https: true/https: false/' vite.config.mts
-      else
-        # Add https: false to the server section if not present
-        sed -i '/server: {/a\    https: false,' vite.config.mts
-      fi
 
       pnpm install
       pnpm run build
@@ -77,24 +73,3 @@ parts:
       - bin/node
       - bin/pnpm
       - lib
-    # permissions:
-    #   - path: airbyte-webapp
-    #     owner: 584792
-    #     group: 584792
-    #     mode: "755"
-    #   - path: airbyte-connector-builder-resources
-    #     owner: 584792
-    #     group: 584792
-    #     mode: "755"
-    #   - path: bin/node
-    #     owner: 584792
-    #     group: 584792
-    #     mode: "755"
-    #   - path: bin/pnpm
-    #     owner: 584792
-    #     group: 584792
-    #     mode: "755"
-    #   - path: lib
-    #     owner: 584792
-    #     group: 584792
-    #     mode: "755"
