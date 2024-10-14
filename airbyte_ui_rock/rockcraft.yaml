@@ -36,7 +36,7 @@ parts:
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
     source-type: git
-    source-commit: 34d28a9a8d3092a7e22eec6562946e6ef6ca36ab # v0.60.0
+    source-tag: v0.63.8
     build-packages:
       - jq
       - curl
