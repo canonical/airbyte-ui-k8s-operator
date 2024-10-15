@@ -1,0 +1,75 @@
+# Copyright 2024 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: airbyte-ui
+summary: Airbyte UI rock
+description: Airbyte UI OCI image for the Airbyte UI charm
+version: "1.0"
+base: ubuntu@22.04
+license: Apache-2.0
+platforms:
+  amd64:
+
+services:
+  airbyte-webapp:
+    override: replace
+    summary: "airbyte-webapp service"
+    startup: disabled
+    command: "/usr/bin/pnpm -C airbyte-webapp start"
+    environment:
+      PORT: "8080"
+
+parts:
+  patches:
+    plugin: dump
+    source: ./patches
+    organize:
+      vite-config-http.patch: patches/vite-config-http.patch
+    stage:
+      - patches/vite-config-http.patch
+    prime:
+      - "-*"
+
+  airbyte-webapp:
+    after: [patches]
+    plugin: dump
+    source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
+    source-type: git
+    source-tag: v0.63.8
+    build-packages:
+      - jq
+      - curl
+      - nodejs
+      - npm
+      - coreutils
+      - bash
+    override-build: |
+      git apply ${CRAFT_STAGE}/patches/*.patch
+
+      curl https://raw.githubusercontent.com/creationix/nvm/v0.40.1/install.sh | bash
+      source ~/.bashrc
+      cd airbyte-webapp
+      nvm install 20.11.0
+      nvm alias default 20.11.0
+      npm install -g pnpm@8.6.12 --force
+
+      pnpm install
+      pnpm run build
+
+      mkdir -p ${CRAFT_PART_INSTALL}/bin ${CRAFT_PART_INSTALL}/lib
+
+      # Copy build directory files to app
+      cp -r . ${CRAFT_PART_INSTALL}/airbyte-webapp
+      cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
+      cp -r /root/.nvm/versions/node/v20.11.0/bin/node ${CRAFT_PART_INSTALL}/node
+      cp -r /root/.nvm/versions/node/v20.11.0/bin/pnpm ${CRAFT_PART_INSTALL}/pnpm
+      cp -r /root/.nvm/versions/node/v20.11.0/lib ${CRAFT_PART_INSTALL}/
+    organize:
+      node: bin/node
+      pnpm: bin/pnpm
+    stage:
+      - airbyte-webapp
+      - airbyte-connector-builder-resources
+      - bin/node
+      - bin/pnpm
+      - lib
