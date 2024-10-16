@@ -46,7 +46,7 @@ async def charm_fixture(request: FixtureRequest, ops_test: OpsTest) -> str | Pat
 @pytest_asyncio.fixture(name="deploy", scope="module")
 async def deploy(ops_test: OpsTest, charm: str, charm_image: str):
     """Test the app is up and running."""
-    resources = {"airbyte-webapp": charm_image}
+    resources = {"airbyte-ui-image": charm_image}
 
     asyncio.gather(
         ops_test.model.deploy(charm, resources=resources, application_name=APP_NAME_AIRBYTE_UI),
