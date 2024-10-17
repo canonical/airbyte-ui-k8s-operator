@@ -81,10 +81,10 @@ config:
 # Your workload’s containers.
 containers:
   airbyte-webapp:
-    resource: airbyte-webapp
+    resource: airbyte-ui-image
 
 # This field populates the Resources tab on Charmhub.
 resources:
-  airbyte-webapp:
+  airbyte-ui-image:
     type: oci-image
     description: OCI image for Airbyte web UI
