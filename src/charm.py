@@ -187,6 +187,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
 
         server_svc = self._state.airbyte_server["name"]
         context = {
+            "AIRBYTE_VERSION": AIRBYTE_VERSION,
             "API_URL": "/api/v1/",
             "AIRBYTE_EDITION": "community",
             "AIRBYTE_SERVER_HOST": f"{server_svc}:{INTERNAL_API_PORT}",

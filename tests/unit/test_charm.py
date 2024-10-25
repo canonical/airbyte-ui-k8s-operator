@@ -134,6 +134,7 @@ class TestCharm(TestCase):
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
+                        "AIRBYTE_VERSION": "1.1.0",
                         "API_URL": "/api/v1/",
                         "AIRBYTE_EDITION": "community",
                         "AIRBYTE_SERVER_HOST": "airbyte-k8s:8001",
