@@ -2,10 +2,10 @@
 # See LICENSE file for licensing details.
 
 diff --git a/airbyte-webapp/vite.config.mts b/airbyte-webapp/vite.config.mts
-index 4cf29fa0de..6359ab2a55 100644
+index a5ac6fa87d..962717506e 100644
 --- a/airbyte-webapp/vite.config.mts
 +++ b/airbyte-webapp/vite.config.mts
-@@ -118,6 +118,7 @@ export default defineConfig(() => {
+@@ -127,6 +127,7 @@ export default defineConfig(() => {
        },
      },
      server: {
