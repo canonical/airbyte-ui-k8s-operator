@@ -61,6 +61,8 @@ parts:
       # Copy build directory files to app
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-webapp
       cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
+      cp -r ../airbyte-commons-auth/ ${CRAFT_PART_INSTALL}/airbyte-commons-auth
+      cp -r ../airbyte-api/ ${CRAFT_PART_INSTALL}/airbyte-api
       cp -r /root/.nvm/versions/node/v20.11.0/bin/node ${CRAFT_PART_INSTALL}/node
       cp -r /root/.nvm/versions/node/v20.11.0/bin/pnpm ${CRAFT_PART_INSTALL}/pnpm
       cp -r /root/.nvm/versions/node/v20.11.0/lib ${CRAFT_PART_INSTALL}/
@@ -70,6 +72,8 @@ parts:
     stage:
       - airbyte-webapp
       - airbyte-connector-builder-resources
+      - airbyte-commons-auth
+      - airbyte-api
       - bin/node
       - bin/pnpm
       - lib
