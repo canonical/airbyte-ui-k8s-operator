@@ -57,7 +57,7 @@ async def deploy(ops_test: OpsTest, charm: str, charm_image: str):
             config={"num-history-shards": 1},
         ),
         ops_test.model.deploy(APP_NAME_TEMPORAL_ADMIN, channel="edge"),
-        ops_test.model.deploy("postgresql-k8s", channel="14/stable", trust=True),
+        ops_test.model.deploy("postgresql-k8s", channel="14/stable", trust=True, revision=381),
         ops_test.model.deploy("minio", channel="edge"),
         ops_test.model.deploy("nginx-ingress-integrator", channel="edge", revision=103, trust=True),
     )
