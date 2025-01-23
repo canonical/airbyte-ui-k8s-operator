@@ -15,6 +15,7 @@ from ops.pebble import CheckStatus
 from ops.testing import Harness
 
 from charm import AirbyteUIK8sOperatorCharm
+from literals import AIRBYTE_VERSION
 from src.charm import CONNECTOR_BUILDER_API_PORT, INTERNAL_API_PORT, WEB_UI_PORT
 
 APP_NAME = "airbyte-webapp"
@@ -134,7 +135,7 @@ class TestCharm(TestCase):
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
-                        "AIRBYTE_VERSION": "1.3.0",
+                        "AIRBYTE_VERSION": AIRBYTE_VERSION,
                         "API_URL": "/api/v1/",
                         "AIRBYTE_EDITION": "community",
                         "AIRBYTE_SERVER_HOST": "airbyte-k8s:8001",

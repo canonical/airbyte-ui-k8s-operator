@@ -4,7 +4,7 @@
 name: airbyte-ui
 summary: Airbyte UI rock
 description: Airbyte UI OCI image for the Airbyte UI charm
-version: "1.0"
+version: "1.4.0"
 base: ubuntu@22.04
 license: Apache-2.0
 platforms:
@@ -35,7 +35,7 @@ parts:
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
     source-type: git
-    source-tag: v1.3.0
+    source-tag: v1.4.0
     build-packages:
       - jq
       - curl
