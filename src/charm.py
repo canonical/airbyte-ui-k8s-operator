@@ -187,6 +187,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
 
         server_svc = self._state.airbyte_server["name"]
         context = {
+            "AIRBYTE_VERSION": AIRBYTE_VERSION,
             "API_URL": "/api/v1/",
             "AIRBYTE_EDITION": "community",
             "AIRBYTE_SERVER_HOST": f"{server_svc}:{INTERNAL_API_PORT}",
@@ -208,7 +209,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "/usr/bin/pnpm -C airbyte-webapp start",
+                    "command": "/usr/bin/pnpm -C airbyte-webapp start oss-k8s",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the
