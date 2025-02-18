@@ -144,6 +144,7 @@ class TestCharm(TestCase):
                         "CONNECTOR_BUILDER_API_HOST": f"airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}",
                         "KEYCLOAK_INTERNAL_HOST": "localhost",
                         "PORT": 8080,
+                        "REACT_APP_CONNECTOR_BUILDER_API_URL": "http://localhost:8080",
                     },
                     "on-check-failure": {"up": "ignore"},
                 }

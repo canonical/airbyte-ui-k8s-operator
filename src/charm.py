@@ -196,6 +196,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "CONNECTOR_BUILDER_API_URL": "/connector-builder-api",
             "KEYCLOAK_INTERNAL_HOST": "localhost",
             "PORT": WEB_UI_PORT,
+            "REACT_APP_CONNECTOR_BUILDER_API_URL": "http://localhost:8080",
         }
 
         self.model.unit.set_ports(WEB_UI_PORT)
