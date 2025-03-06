@@ -16,7 +16,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +50,9 @@ class TestDeployment:
             )
 
             with unittest.mock.patch.multiple(socket, getaddrinfo=gen_patch_getaddrinfo(new_hostname, "127.0.0.1")):
-                options = webdriver.ChromeOptions()
+                options = webdriver.FirefoxOptions()
                 options.add_argument("--headless")
-                options.binary_location = "/usr/bin/chromium-browser"
-                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+                driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
 
                 try:
                     # Open React app
