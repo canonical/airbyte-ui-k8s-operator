@@ -11,6 +11,12 @@ import pytest
 import requests
 from helpers import APP_NAME_AIRBYTE_UI, gen_patch_getaddrinfo, get_unit_url
 from pytest_operator.plugin import OpsTest
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +50,34 @@ class TestDeployment:
             )
 
             with unittest.mock.patch.multiple(socket, getaddrinfo=gen_patch_getaddrinfo(new_hostname, "127.0.0.1")):
+                options = webdriver.ChromeOptions()
+                options.add_argument("--headless")
+                options.binary_location = "/usr/bin/chromium-browser"
+                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+                try:
+                    # Open React app
+                    driver.get(f"https://{new_hostname}")
+                    logging.info("Integration test: Page loaded successfully.")
+
+                    logging.info("Integration test: Page source: %s", driver.page_source)
+
+                    # Wait for the <p> element with partial text match
+                    wait = WebDriverWait(driver, 120)
+                    error_message = wait.until(
+                        expected_conditions.presence_of_element_located(
+                            (By.XPATH, "//p[contains(text(), 'Sorry, something went wrong.')]")
+                        )
+                    )
+
+                    assert not error_message.is_displayed()
+
+                except Exception as e:
+                    logging.info("Test Failed: %s", e)
+                    assert False
+                finally:
+                    driver.quit()
+
                 response = requests.get(f"https://{new_hostname}", timeout=5, verify=False)  # nosec
                 assert (
                     response.status_code == 200
