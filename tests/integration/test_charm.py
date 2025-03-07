@@ -12,11 +12,11 @@ import requests
 from helpers import APP_NAME_AIRBYTE_UI, gen_patch_getaddrinfo, get_unit_url
 from pytest_operator.plugin import OpsTest
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +50,12 @@ class TestDeployment:
             )
 
             with unittest.mock.patch.multiple(socket, getaddrinfo=gen_patch_getaddrinfo(new_hostname, "127.0.0.1")):
-                options = webdriver.ChromeOptions()
-                options.add_argument("--no-sandbox")
+                options = Options()
+                # options.add_argument("--no-sandbox")
                 options.add_argument("--headless")
-                options.add_argument("--disable-dev-shm-usage")
-                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+                # options.add_argument("--disable-dev-shm-usage")
+                service = Service("/snap/bin/geckodriver")
+                driver = webdriver.Firefox(service=service, options=options)
 
                 try:
                     # Open React app

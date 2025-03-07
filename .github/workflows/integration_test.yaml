@@ -17,4 +17,7 @@ jobs:
       trivy-severity-config: CRITICAL
       pre-run-script: |
         -c "sudo apt update
-            sudo apt install -y chromium-browser chromium-chromedriver"
+            sudo apt install -y chromium-browser chromium-chromedriver
+            sudo snap install chromium
+            sudo apt install -y firefox
+            which geckodriver"
