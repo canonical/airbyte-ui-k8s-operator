@@ -16,7 +16,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +50,11 @@ class TestDeployment:
             )
 
             with unittest.mock.patch.multiple(socket, getaddrinfo=gen_patch_getaddrinfo(new_hostname, "127.0.0.1")):
-                options = webdriver.FirefoxOptions()
+                options = webdriver.ChromeOptions()
+                options.add_argument("--no-sandbox")
                 options.add_argument("--headless")
-                driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
+                options.add_argument("--disable-dev-shm-usage")
+                driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
                 try:
                     # Open React app

@@ -15,3 +15,6 @@ jobs:
       self-hosted-runner-label: "xlarge"
       microk8s-addons: "dns ingress rbac storage metallb:10.15.119.2-10.15.119.4 registry"
       trivy-severity-config: CRITICAL
+      pre-run-script: |
+        -c "sudo apt update
+            sudo apt install -y chromium-browser chromium-chromedriver"
