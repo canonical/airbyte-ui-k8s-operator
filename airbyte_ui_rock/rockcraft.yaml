@@ -13,11 +13,17 @@ platforms:
 services:
   airbyte-webapp:
     override: replace
-    summary: "airbyte-webapp service"
-    startup: disabled
+    summary: "Airbyte WebApp service"
+    startup: enabled
     command: "/usr/bin/pnpm -C airbyte-webapp start"
     environment:
-      PORT: "8080"
+      PORT: "3000"
+
+  nginx:
+    override: replace
+    summary: "NGINX service to serve Airbyte WebApp"
+    startup: enabled
+    command: "nginx -g 'daemon off;'"
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
@@ -46,17 +52,7 @@ parts:
       - gnupg
       - python3.10-venv  
     override-build: |
-      # Install kubectl
-      echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
-      chmod 644 /etc/apt/sources.list.d/kubernetes.list   # helps tools such as command-not-found to work correctly
-      curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-      chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg # allow unprivileged APT programs to read this keyring
-      apt-get update
-      apt-get install -y kubectl
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/local/bin
       mkdir -p ${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
-      cp -r $(which kubectl) ${CRAFT_PART_INSTALL}/usr/local/bin/kubectl
-
       pip install --upgrade setuptools pip airbyte-cdk==5.12.0 \
           --target=/${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
     stage:
@@ -95,7 +91,7 @@ parts:
       - python3-dev
     override-build: |
       cd ${CRAFT_STAGE}/airbyte-platform
-      ./gradlew assemble -x dockerBuildImage --continue --max-workers 1
+      ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
       ./gradlew --stop
 
   organize-airbyte-webapp:
@@ -114,10 +110,13 @@ parts:
       pnpm install
       pnpm run build
 
-      mkdir -p ${CRAFT_PART_INSTALL}/bin ${CRAFT_PART_INSTALL}/lib
+      mkdir -p ${CRAFT_PART_INSTALL}/bin ${CRAFT_PART_INSTALL}/lib ${CRAFT_PART_INSTALL}/usr/share/nginx/html ${CRAFT_PART_INSTALL}/etc/nginx/templates
 
       # Copy build directory files to app
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-webapp
+      cp -r ./build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
+      cp -r ./bin/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates/default.conf.template
+
       cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
       cp -r ../airbyte-connector-builder-server/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-server
       cp -r ../airbyte-commons-auth/ ${CRAFT_PART_INSTALL}/airbyte-commons-auth
@@ -137,3 +136,5 @@ parts:
       - bin/node
       - bin/pnpm
       - lib
+      - usr/share/nginx/html
+      - etc/nginx/templates/default.conf.template

@@ -146,7 +146,13 @@ class TestCharm(TestCase):
                         "PORT": 8080,
                     },
                     "on-check-failure": {"up": "ignore"},
-                }
+                },
+                "nginx": {
+                    "summary": "NGINX service to serve Airbyte WebApp",
+                    "command": "nginx -g 'daemon off;'",
+                    "startup": "enabled",
+                    "override": "replace",
+                },
             },
             "checks": {
                 "up": {
