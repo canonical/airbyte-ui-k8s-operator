@@ -45,8 +45,6 @@ class TestDeployment:
             driver.get(url)
             logging.info("Integration test: Page loaded successfully.")
 
-            logging.info("Integration test: Page source: %s", driver.page_source)
-
             # Wait for the <p> element with partial text match
             wait = WebDriverWait(driver, 120)
             error_message = wait.until(

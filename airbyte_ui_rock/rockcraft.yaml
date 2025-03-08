@@ -80,7 +80,7 @@ parts:
         group: 584792
         mode: "755"
 
-  assemble:
+  build-airbyte-webapp:
     after: [pull-airbyte-repo]
     plugin: nil
     build-packages:
@@ -100,6 +100,10 @@ parts:
       - libpq-dev
       - python3-dev
       - nginx
+      - jq
+      - curl
+      - tar
+      - gzip
     override-build: |
       cd ${CRAFT_STAGE}/airbyte-platform
       ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
@@ -111,11 +115,17 @@ parts:
         mode: "755"
 
   organize-airbyte-webapp:
-    after: [assemble]
+    after: [build-airbyte-webapp]
     plugin: nil
+    stage-packages:
+      - jq
+      - curl
     override-build: |
       cd ${CRAFT_STAGE}/airbyte-platform
       git apply ${CRAFT_STAGE}/patches/*.patch
+
+      apt-get update
+      apt-get install -y jq curl
 
       curl https://raw.githubusercontent.com/creationix/nvm/v0.40.1/install.sh | bash
       source ~/.bashrc
