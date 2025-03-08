@@ -21,3 +21,4 @@ jobs:
             sudo snap install chromium
             sudo apt install -y firefox
             which geckodriver"
+      rockcraft-enable-security-nesting: true

@@ -55,6 +55,7 @@ class TestDeployment:
                 )
             )
 
+            logging.info("Integration test: Error message displayed? %s", error_message.is_displayed())
             assert not error_message.is_displayed()
 
         except Exception as e:
