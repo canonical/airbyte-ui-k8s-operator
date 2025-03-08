@@ -25,6 +25,11 @@ services:
     startup: enabled
     command: "nginx -g 'daemon off;'"
 
+# Please refer to
+# https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
+# for more information about shared user.
+run_user: _daemon_
+
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
   CDK_PYTHON: /usr/bin/python3.10
@@ -42,25 +47,25 @@ parts:
     prime:
       - "-*"
 
-  install-dependencies:
-    plugin: nil
-    after: [patches]
-    stage-packages:
-      - apt-transport-https
-      - ca-certificates
-      - curl 
-      - gnupg
-      - python3.10-venv  
-    override-build: |
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
-      pip install --upgrade setuptools pip airbyte-cdk==5.12.0 \
-          --target=/${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
-    stage:
-      - usr/local/bin/kubectl
-      - usr/local/lib/python3.10/dist-packages
+  # install-dependencies:
+  #   plugin: nil
+  #   after: [patches]
+  #   stage-packages:
+  #     - apt-transport-https
+  #     - ca-certificates
+  #     - curl 
+  #     - gnupg
+  #     - python3.10-venv
+  #     - nginx
+  #   override-build: |
+  #     mkdir -p ${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
+  #     pip install --upgrade setuptools pip airbyte-cdk==5.12.0 \
+  #         --target=/${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
+  #   stage:
+  #     - usr/local/lib/python3.10/dist-packages
 
   pull-airbyte-repo:
-    after: [install-dependencies, patches]
+    after: [patches]
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
     source-type: git
@@ -69,6 +74,11 @@ parts:
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
     stage:
       - airbyte-platform
+    permissions:
+      - path: usr/share/nginx/html
+        owner: 584792
+        group: 584792
+        mode: "755"
 
   assemble:
     after: [pull-airbyte-repo]
@@ -89,15 +99,22 @@ parts:
       - openjdk-21-jdk-headless
       - libpq-dev
       - python3-dev
+      - nginx
     override-build: |
       cd ${CRAFT_STAGE}/airbyte-platform
       ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
       ./gradlew --stop
+    permissions:
+      - path: usr/share/nginx/html
+        owner: 584792
+        group: 584792
+        mode: "755"
 
   organize-airbyte-webapp:
     after: [assemble]
     plugin: nil
     override-build: |
+      cd ${CRAFT_STAGE}/airbyte-platform
       git apply ${CRAFT_STAGE}/patches/*.patch
 
       curl https://raw.githubusercontent.com/creationix/nvm/v0.40.1/install.sh | bash
@@ -115,12 +132,12 @@ parts:
       # Copy build directory files to app
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-webapp
       cp -r ./build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-      cp -r ./bin/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates/default.conf.template
+      cp -r ./nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates/default.conf.template
 
-      cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
-      cp -r ../airbyte-connector-builder-server/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-server
-      cp -r ../airbyte-commons-auth/ ${CRAFT_PART_INSTALL}/airbyte-commons-auth
-      cp -r ../airbyte-api/ ${CRAFT_PART_INSTALL}/airbyte-api
+      # cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
+      # cp -r ../airbyte-connector-builder-server/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-server
+      # cp -r ../airbyte-commons-auth/ ${CRAFT_PART_INSTALL}/airbyte-commons-auth
+      # cp -r ../airbyte-api/ ${CRAFT_PART_INSTALL}/airbyte-api
       cp -r /root/.nvm/versions/node/v20.11.0/bin/node ${CRAFT_PART_INSTALL}/node
       cp -r /root/.nvm/versions/node/v20.11.0/bin/pnpm ${CRAFT_PART_INSTALL}/pnpm
       cp -r /root/.nvm/versions/node/v20.11.0/lib ${CRAFT_PART_INSTALL}/
@@ -128,13 +145,18 @@ parts:
       node: bin/node
       pnpm: bin/pnpm
     stage:
-      - airbyte-webapp
-      - airbyte-connector-builder-resources
-      - airbyte-connector-builder-server
-      - airbyte-commons-auth
-      - airbyte-api
+    #   - airbyte-webapp
+    #   - airbyte-connector-builder-resources
+    #   - airbyte-connector-builder-server
+    #   - airbyte-commons-auth
+    #   - airbyte-api
       - bin/node
       - bin/pnpm
       - lib
-      - usr/share/nginx/html
-      - etc/nginx/templates/default.conf.template
+      # - usr/share/nginx/html
+      # - etc/nginx/templates/default.conf.template
+    permissions:
+      - path: usr/share/nginx/html
+        owner: 584792
+        group: 584792
+        mode: "755"

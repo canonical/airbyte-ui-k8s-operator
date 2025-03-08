@@ -131,7 +131,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "/usr/bin/pnpm -C airbyte-webapp start oss-k8s",
+                    "command": "/usr/bin/pnpm -C airbyte-platform/airbyte-webapp start oss-k8s",
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
