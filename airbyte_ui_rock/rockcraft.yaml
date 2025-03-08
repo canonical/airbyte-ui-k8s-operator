@@ -102,6 +102,7 @@ parts:
     after: [assemble]
     plugin: nil
     override-build: |
+      cd ${CRAFT_STAGE}/airbyte-platform
       git apply ${CRAFT_STAGE}/patches/*.patch
 
       curl https://raw.githubusercontent.com/creationix/nvm/v0.40.1/install.sh | bash
