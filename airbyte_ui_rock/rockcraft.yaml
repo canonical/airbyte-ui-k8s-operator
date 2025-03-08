@@ -145,11 +145,11 @@ parts:
       node: bin/node
       pnpm: bin/pnpm
     stage:
-    #   - airbyte-webapp
-    #   - airbyte-connector-builder-resources
-    #   - airbyte-connector-builder-server
-    #   - airbyte-commons-auth
-    #   - airbyte-api
+      - airbyte-webapp
+      - airbyte-connector-builder-resources
+      - airbyte-connector-builder-server
+      - airbyte-commons-auth
+      - airbyte-api
       - bin/node
       - bin/pnpm
       - lib
