@@ -209,19 +209,13 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "/usr/bin/pnpm -C airbyte-webapp start oss-k8s",
+                    "command": "./docker-entrypoint.sh nginx -g daemon off;",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the
                     # config forces replanning to restart the service.
                     "environment": context,
                     "on-check-failure": {"up": "ignore"},
-                },
-                "nginx": {
-                    "summary": "NGINX service to serve Airbyte WebApp",
-                    "command": "nginx -g 'daemon off;'",
-                    "startup": "enabled",
-                    "override": "replace",
                 },
             },
             "checks": {

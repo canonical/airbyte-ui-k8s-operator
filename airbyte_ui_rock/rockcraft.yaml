@@ -11,30 +11,23 @@ platforms:
   amd64:
 
 services:
-  airbyte-webapp:
-    override: replace
-    summary: "Airbyte WebApp service"
-    startup: enabled
-    command: "/usr/bin/pnpm -C airbyte-webapp start"
-    environment:
-      PORT: "3000"
-
   nginx:
     override: replace
     summary: "NGINX service to serve Airbyte WebApp"
+    command: "./docker-entrypoint.sh"
     startup: enabled
-    command: "nginx -g 'daemon off;'"
-
-# Please refer to
-# https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
-# for more information about shared user.
-run_user: _daemon_
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
   CDK_PYTHON: /usr/bin/python3.10
   CDK_ENTRYPOINT: /usr/lib/python3.10/dist-packages/airbyte_cdk/connector_builder/main.py
   CDK_VERSION: "5.12.0"
+
+# Please refer to
+# https://discourse.ubuntu.com/t/unifying-user-identity-across-snaps-and-rocks/36469
+# for more information about shared user.
+# The UID 584792 corresponds to _daemon_ user.
+run_user: _daemon_
 
 parts:
   patches:
@@ -47,42 +40,12 @@ parts:
     prime:
       - "-*"
 
-  # install-dependencies:
-  #   plugin: nil
-  #   after: [patches]
-  #   stage-packages:
-  #     - apt-transport-https
-  #     - ca-certificates
-  #     - curl 
-  #     - gnupg
-  #     - python3.10-venv
-  #     - nginx
-  #   override-build: |
-  #     mkdir -p ${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
-  #     pip install --upgrade setuptools pip airbyte-cdk==5.12.0 \
-  #         --target=/${CRAFT_PART_INSTALL}/usr/local/lib/python3.10/dist-packages
-  #   stage:
-  #     - usr/local/lib/python3.10/dist-packages
-
   pull-airbyte-repo:
     after: [patches]
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git # yamllint disable-line
     source-type: git
     source-tag: v1.4.0
-    override-build: |
-      cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
-    stage:
-      - airbyte-platform
-    permissions:
-      - path: usr/share/nginx/html
-        owner: 584792
-        group: 584792
-        mode: "755"
-
-  build-airbyte-webapp:
-    after: [pull-airbyte-repo]
-    plugin: nil
     build-packages:
       - jq
       - curl
@@ -104,69 +67,91 @@ parts:
       - curl
       - tar
       - gzip
+      - ca-certificates
+      - libpcre3
+      - libssl3
+      - zlib1g
     override-build: |
-      cd ${CRAFT_STAGE}/airbyte-platform
-      ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
-      ./gradlew --stop
-    permissions:
-      - path: usr/share/nginx/html
-        owner: 584792
-        group: 584792
-        mode: "755"
-
-  organize-airbyte-webapp:
-    after: [build-airbyte-webapp]
-    plugin: nil
-    stage-packages:
-      - jq
-      - curl
-    override-build: |
-      cd ${CRAFT_STAGE}/airbyte-platform
       git apply ${CRAFT_STAGE}/patches/*.patch
 
-      apt-get update
-      apt-get install -y jq curl
+      which nginx
+      nginx -v
 
-      curl https://raw.githubusercontent.com/creationix/nvm/v0.40.1/install.sh | bash
-      source ~/.bashrc
-      cd airbyte-webapp
-      nvm install 20.11.0
-      nvm alias default 20.11.0
-      npm install -g pnpm@8.6.12 --force
+      ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
+      ./gradlew --stop
 
-      pnpm install
-      pnpm run build
+      cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
 
-      mkdir -p ${CRAFT_PART_INSTALL}/bin ${CRAFT_PART_INSTALL}/lib ${CRAFT_PART_INSTALL}/usr/share/nginx/html ${CRAFT_PART_INSTALL}/etc/nginx/templates
-
-      # Copy build directory files to app
-      cp -r . ${CRAFT_PART_INSTALL}/airbyte-webapp
-      cp -r ./build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-      cp -r ./nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates/default.conf.template
-
-      cp -r ../airbyte-connector-builder-resources/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-resources
-      cp -r ../airbyte-connector-builder-server/ ${CRAFT_PART_INSTALL}/airbyte-connector-builder-server
-      cp -r ../airbyte-commons-auth/ ${CRAFT_PART_INSTALL}/airbyte-commons-auth
-      cp -r ../airbyte-api/ ${CRAFT_PART_INSTALL}/airbyte-api
-      cp -r /root/.nvm/versions/node/v20.11.0/bin/node ${CRAFT_PART_INSTALL}/node
-      cp -r /root/.nvm/versions/node/v20.11.0/bin/pnpm ${CRAFT_PART_INSTALL}/pnpm
-      cp -r /root/.nvm/versions/node/v20.11.0/lib ${CRAFT_PART_INSTALL}/
+      mkdir ${CRAFT_PART_INSTALL}/docker-entrypoint.d
+      cp -r ./docker/airbyte-nginx/alpine-slim/10-listen-on-ipv6-by-default.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+      cp -r ./docker/airbyte-nginx/alpine-slim/15-local-resolvers.envsh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/15-local-resolvers.envsh
+      cp -r ./docker/airbyte-nginx/alpine-slim/20-envsubst-on-templates.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/20-envsubst-on-templates.sh
+      cp -r ./docker/airbyte-nginx/alpine-slim/30-tune-worker-processes.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/30-tune-worker-processes.sh
     organize:
-      node: bin/node
-      pnpm: bin/pnpm
+      airbyte-platform/airbyte-webapp/nginx/default.conf.template: etc/nginx/templates/default.conf.template
+      airbyte-platform/airbyte-webapp/bin/build: usr/share/nginx/html
+      airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh: docker-entrypoint.sh
     stage:
-      - airbyte-webapp
-      - airbyte-connector-builder-resources
-      - airbyte-connector-builder-server
-      - airbyte-commons-auth
-      - airbyte-api
-      - bin/node
-      - bin/pnpm
-      - lib
-      # - usr/share/nginx/html
-      # - etc/nginx/templates/default.conf.template
+      - etc/nginx/templates/default.conf.template
+      - usr/share/nginx/html
+      - docker-entrypoint.sh
+      - docker-entrypoint.d
     permissions:
-      - path: usr/share/nginx/html
+      - path: etc/nginx
         owner: 584792
         group: 584792
         mode: "755"
+    # stage:
+      # - airbyte-platform
+
+  # build-airbyte-webapp:
+  #   after: [pull-airbyte-repo]
+  #   plugin: nil
+  #   build-packages:
+  #     - jq
+  #     - curl
+  #     - coreutils
+  #     - bash
+  #     - gradle
+  #     - openjdk-21-jdk-headless
+  #     - npm
+  #     - libpq-dev
+  #     - python3-dev
+  #   build-snaps:
+  #     - docker
+    # stage-packages:
+    #   - openjdk-21-jdk-headless
+    #   - libpq-dev
+    #   - python3-dev
+    #   - nginx
+    #   - jq
+    #   - curl
+    #   - tar
+    #   - gzip
+    #   - ca-certificates
+    #   - libpcre3
+    #   - libssl3
+    #   - zlib1g
+    # override-build: |
+    #   cd ${CRAFT_STAGE}/airbyte-platform
+    #   git apply ${CRAFT_STAGE}/patches/*.patch
+
+    #   ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
+    #   ./gradlew --stop
+
+    #   cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
+    # stage:
+      # - airbyte-platform
+
+  # nginx:
+  #   plugin: nil
+  #   after: [pull-airbyte-repo]
+  #   source: .
+  #   organize:
+  #     airbyte-platform/airbyte-webapp/nginx/default.conf.template: etc/nginx/templates/default.conf.template
+  #     airbyte-platform/airbyte-webapp/bin/build: usr/share/nginx/html
+  #     docker-entrypoint.sh: airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh
+  #   stage:
+  #     - etc/nginx/templates/default.conf.template
+  #     - usr/share/nginx/html
+  #     - airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh

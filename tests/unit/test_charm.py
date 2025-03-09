@@ -131,7 +131,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "/usr/bin/pnpm -C airbyte-webapp start oss-k8s",
+                    "command": "./docker-entrypoint.sh nginx -g daemon off;",
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
@@ -146,12 +146,6 @@ class TestCharm(TestCase):
                         "PORT": 8080,
                     },
                     "on-check-failure": {"up": "ignore"},
-                },
-                "nginx": {
-                    "summary": "NGINX service to serve Airbyte WebApp",
-                    "command": "nginx -g 'daemon off;'",
-                    "startup": "enabled",
-                    "override": "replace",
                 },
             },
             "checks": {
