@@ -30,8 +30,58 @@ environment:
 run_user: _daemon_
 
 parts:
+
+  nginx-user:
+    plugin: nil
+    overlay-script: |
+      chroot $CRAFT_OVERLAY
+      useradd -M -U -r nginx
+
+  nginx:
+    plugin: autotools
+    after:
+      - nginx-user
+    source: https://nginx.org/download/nginx-1.23.3.tar.gz
+    build-packages:
+      - libgd-dev
+      - libpcre3-dev
+      - libssl-dev
+      - zlib1g-dev
+    stage-packages:
+      - ca-certificates_data
+    autotools-configure-parameters:
+      - --prefix=/usr/share/nginx
+      - --user=nginx
+      - --sbin-path=/usr/sbin/nginx
+      - --conf-path=/etc/nginx/nginx.conf
+      - --http-log-path=/var/log/nginx/access.log
+      - --error-log-path=/var/log/nginx/error.log
+      - --with-pcre
+      - --lock-path=/var/lock/nginx.lock
+      - --pid-path=/var/run/nginx.pid
+      - --with-http_ssl_module
+      - --with-http_image_filter_module=dynamic
+      - --modules-path=/etc/nginx/modules
+      - --with-http_v2_module
+      - --with-stream=dynamic
+      - --with-http_addition_module
+      - --with-http_mp4_module
+    override-build: |
+      craftctl default
+      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
+
+  config:
+    plugin: dump
+    after:
+      - nginx
+    source: files
+    organize:
+      nginx.conf: etc/nginx/nginx.conf
+
   patches:
     plugin: dump
+    after:
+      - config
     source: ./patches
     organize:
       vite-config-http.patch: patches/vite-config-http.patch
@@ -62,7 +112,6 @@ parts:
       - openjdk-21-jdk-headless
       - libpq-dev
       - python3-dev
-      - nginx
       - jq
       - curl
       - tar
@@ -73,9 +122,6 @@ parts:
       - zlib1g
     override-build: |
       git apply ${CRAFT_STAGE}/patches/*.patch
-
-      which nginx
-      nginx -v
 
       ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
       ./gradlew --stop
