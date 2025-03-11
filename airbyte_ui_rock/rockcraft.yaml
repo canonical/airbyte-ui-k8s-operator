@@ -107,6 +107,8 @@ parts:
       - libpq-dev
       - python3-dev
       - nginx
+      - xxd
+      - tzdata
     build-snaps:
       - docker
     stage-packages:
@@ -122,9 +124,11 @@ parts:
       - libssl3
       - zlib1g
     override-build: |
+      UID=$(id -u nginx)
+
       git apply ${CRAFT_STAGE}/patches/*.patch
 
-      ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
+      ./gradlew :oss:airbyte-webapp:assemble --continue --max-workers 1
       ./gradlew --stop
 
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
@@ -137,14 +141,20 @@ parts:
       cp -r ./docker/airbyte-nginx/alpine-slim/15-local-resolvers.envsh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/15-local-resolvers.envsh
       cp -r ./docker/airbyte-nginx/alpine-slim/20-envsubst-on-templates.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/20-envsubst-on-templates.sh
       cp -r ./docker/airbyte-nginx/alpine-slim/30-tune-worker-processes.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/30-tune-worker-processes.sh
+      cp -r ./docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.sh
 
       cp -r ./airbyte-webapp/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-      cp -r ./docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.sh
-    # organize:
-    #   airbyte-platform/airbyte-webapp/nginx/default.conf.template: etc/nginx/templates/default.conf.template
-    #   airbyte-platform/airbyte-webapp/bin/build: usr/share/nginx/html
-    #   airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh: docker-entrypoint.sh
+
+      sed -i 's,listen       80;,listen       8080;,' /etc/nginx/conf.d/default.conf \
+          && sed -i '/user  nginx;/d' /etc/nginx/nginx.conf \
+          && sed -i 's,/var/run/nginx.pid,/tmp/nginx.pid,' /etc/nginx/nginx.conf \
+          && sed -i "/^http {/a \    proxy_temp_path /tmp/proxy_temp;\n    client_body_temp_path /tmp/client_temp;\n    fastcgi_temp_path /tmp/fastcgi_temp;\n    uwsgi_temp_path /tmp/uwsgi_temp;\n    scgi_temp_path /tmp/scgi_temp;\n" /etc/nginx/nginx.conf \
+      # nginx user must own the cache and etc directory to write cache and tweak the nginx config
+          && chown -R $UID:0 /var/cache/nginx \
+          && chmod -R g+w /var/cache/nginx \
+          && chown -R $UID:0 /etc/nginx \
+          && chmod -R g+w /etc/nginx
     stage:
       - etc/nginx/templates/default.conf.template
       - usr/share/nginx/html
@@ -155,57 +165,7 @@ parts:
         owner: 584792
         group: 584792
         mode: "755"
-    # stage:
-      # - airbyte-platform
-
-  # build-airbyte-webapp:
-  #   after: [pull-airbyte-repo]
-  #   plugin: nil
-  #   build-packages:
-  #     - jq
-  #     - curl
-  #     - coreutils
-  #     - bash
-  #     - gradle
-  #     - openjdk-21-jdk-headless
-  #     - npm
-  #     - libpq-dev
-  #     - python3-dev
-  #   build-snaps:
-  #     - docker
-    # stage-packages:
-    #   - openjdk-21-jdk-headless
-    #   - libpq-dev
-    #   - python3-dev
-    #   - nginx
-    #   - jq
-    #   - curl
-    #   - tar
-    #   - gzip
-    #   - ca-certificates
-    #   - libpcre3
-    #   - libssl3
-    #   - zlib1g
-    # override-build: |
-    #   cd ${CRAFT_STAGE}/airbyte-platform
-    #   git apply ${CRAFT_STAGE}/patches/*.patch
-
-    #   ./gradlew :oss:airbyte-webapp:build --continue --max-workers 1
-    #   ./gradlew --stop
-
-    #   cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
-    # stage:
-      # - airbyte-platform
-
-  # nginx:
-  #   plugin: nil
-  #   after: [pull-airbyte-repo]
-  #   source: .
-  #   organize:
-  #     airbyte-platform/airbyte-webapp/nginx/default.conf.template: etc/nginx/templates/default.conf.template
-  #     airbyte-platform/airbyte-webapp/bin/build: usr/share/nginx/html
-  #     docker-entrypoint.sh: airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh
-  #   stage:
-  #     - etc/nginx/templates/default.conf.template
-  #     - usr/share/nginx/html
-  #     - airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh
+      - path: etc/nginx/conf.d
+        owner: 584792
+        group: 584792
+        mode: "755"
