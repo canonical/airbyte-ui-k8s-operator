@@ -14,7 +14,7 @@ services:
   nginx:
     override: replace
     summary: "NGINX service to serve Airbyte WebApp"
-    command: "./docker-entrypoint.sh"
+    command: "./docker-entrypoint.sh nginx"
     startup: enabled
 
 environment:
@@ -30,12 +30,12 @@ environment:
 run_user: _daemon_
 
 parts:
-
   nginx-user:
     plugin: nil
     overlay-script: |
-      chroot $CRAFT_OVERLAY
-      useradd -M -U -r nginx
+      # chroot $CRAFT_OVERLAY
+      # useradd -M -U -r nginx
+      chroot $CRAFT_OVERLAY /bin/sh -c "useradd -M -U -r -s /usr/sbin/nologin -d /nonexistent nginx"
 
   nginx:
     plugin: autotools
@@ -106,6 +106,7 @@ parts:
       - npm
       - libpq-dev
       - python3-dev
+      - nginx
     build-snaps:
       - docker
     stage-packages:
@@ -129,14 +130,21 @@ parts:
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
 
       mkdir ${CRAFT_PART_INSTALL}/docker-entrypoint.d
+      mkdir -p ${CRAFT_PART_INSTALL}/etc/nginx/templates
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
+
       cp -r ./docker/airbyte-nginx/alpine-slim/10-listen-on-ipv6-by-default.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
       cp -r ./docker/airbyte-nginx/alpine-slim/15-local-resolvers.envsh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/15-local-resolvers.envsh
       cp -r ./docker/airbyte-nginx/alpine-slim/20-envsubst-on-templates.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/20-envsubst-on-templates.sh
       cp -r ./docker/airbyte-nginx/alpine-slim/30-tune-worker-processes.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/30-tune-worker-processes.sh
-    organize:
-      airbyte-platform/airbyte-webapp/nginx/default.conf.template: etc/nginx/templates/default.conf.template
-      airbyte-platform/airbyte-webapp/bin/build: usr/share/nginx/html
-      airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh: docker-entrypoint.sh
+
+      cp -r ./airbyte-webapp/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates
+      cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
+      cp -r ./docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.sh
+    # organize:
+    #   airbyte-platform/airbyte-webapp/nginx/default.conf.template: etc/nginx/templates/default.conf.template
+    #   airbyte-platform/airbyte-webapp/bin/build: usr/share/nginx/html
+    #   airbyte-platform/docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh: docker-entrypoint.sh
     stage:
       - etc/nginx/templates/default.conf.template
       - usr/share/nginx/html
