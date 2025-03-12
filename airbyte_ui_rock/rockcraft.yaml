@@ -33,11 +33,11 @@ parts:
   nginx-user:
     plugin: nil
     overlay-script: |
-      GID=584792
-      NGINX_UID=584792
+      # GID=584792
+      # NGINX_UID=584792
 
-      groupadd --gid "$GID" nginx
-      useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx --uid "$NGINX_UID" nginx
+      groupadd --system nginx
+      useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx nginx
 
   nginx:
     plugin: autotools
