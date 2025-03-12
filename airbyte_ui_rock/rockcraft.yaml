@@ -33,11 +33,9 @@ parts:
   nginx-user:
     plugin: nil
     overlay-script: |
-      # GID=584792
-      # NGINX_UID=584792
-
-      groupadd --system nginx
-      useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx nginx
+      # groupadd --system nginx
+      # useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx nginx
+      useradd -M -U -r nginx
 
   nginx:
     plugin: autotools
@@ -80,6 +78,9 @@ parts:
     organize:
       nginx.conf: etc/nginx/nginx.conf
       default.conf: etc/nginx/conf.d/default.conf
+    stage:
+      - etc/nginx/nginx.conf
+      - etc/nginx/conf.d/default.conf
 
   patches:
     plugin: dump
@@ -112,11 +113,24 @@ parts:
       - nginx
       - xxd
       - tzdata
+      - gettext
+      - gettext-base
     build-snaps:
       - docker
     stage-packages:
       - openjdk-21-jdk-headless
       - libpq-dev
+      - gcc
+      - libc6-dev
+      - make
+      - libssl-dev
+      - libpcre2-dev
+      - zlib1g-dev
+      - linux-headers-generic
+      - bash
+      - findutils
+      - gettext
+      - gettext-base
       - python3-dev
       - jq
       - curl
@@ -153,6 +167,21 @@ parts:
       cp -r ./airbyte-webapp/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       
+      # Ensure default.conf exists before modifying it
+      if [ ! -f /etc/nginx/conf.d/default.conf ]; then
+          echo "Creating default.conf..."
+          cat <<EOF > /etc/nginx/conf.d/default.conf
+      server {
+          listen 80;
+          server_name localhost;
+          location / {
+              root /usr/share/nginx/html;
+              index index.html;
+          }
+      }
+      EOF
+      fi
+
       sed -i 's,listen       80;,listen       8080;,' /etc/nginx/conf.d/default.conf
       sed -i '/user  nginx;/d' /etc/nginx/nginx.conf
       sed -i 's,/var/run/nginx.pid,/tmp/nginx.pid,' /etc/nginx/nginx.conf
@@ -162,11 +191,18 @@ parts:
       chmod -R g+w /var/cache/nginx
       chown -R $NGINX_UID:nginx /etc/nginx
       chmod -R g+w /etc/nginx
+
+      which envsubst
+
+      cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/envsubst
+    organize:
+      envsubst: bin/envsubst
     stage:
       - etc/nginx/templates/default.conf.template
       - usr/share/nginx/html
       - docker-entrypoint.sh
       - docker-entrypoint.d
+      - bin/envsubst
     # permissions:
     #   - path: etc/nginx
     #     owner: 584792
