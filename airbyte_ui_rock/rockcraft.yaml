@@ -38,7 +38,7 @@ parts:
       # useradd -M -U -r nginx
       craftctl default
       groupadd --root ${CRAFT_PART_INSTALL} nginx
-      useradd -d /home/myuser -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+      useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
 
   nginx:
     plugin: autotools
