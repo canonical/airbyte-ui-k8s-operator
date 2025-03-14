@@ -36,7 +36,7 @@ parts:
       # groupadd --system nginx
       # useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx nginx
       # useradd -M -U -r nginx
-      craftctl default
+      # craftctl default
       groupadd --root ${CRAFT_PART_INSTALL} nginx
       useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
 
