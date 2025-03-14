@@ -215,6 +215,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
                     # Including config values here so that a change in the
                     # config forces replanning to restart the service.
                     "environment": context,
+                    "user": "nginx",
                     "on-check-failure": {"up": "ignore"},
                 },
             },
