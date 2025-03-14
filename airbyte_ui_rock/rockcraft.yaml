@@ -32,10 +32,13 @@ environment:
 parts:
   nginx-user:
     plugin: nil
-    overlay-script: |
+    override-build: |
       # groupadd --system nginx
       # useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx nginx
-      useradd -M -U -r nginx
+      # useradd -M -U -r nginx
+      craftctl default
+      groupadd --root ${CRAFT_PART_INSTALL} nginx
+      useradd -d /home/myuser -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
 
   nginx:
     plugin: autotools
