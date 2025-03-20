@@ -33,12 +33,11 @@ environment:
 parts:
   nginx-user:
     plugin: nil
+    source-type: local
+    source: .
     stage-packages:
       - base-passwd_data
       - base-files_base
-    overlay-packages:
-      - bash
-      - bash_bins
     override-build: |
       craftctl default
       groupadd --root ${CRAFT_PART_INSTALL} nginx
