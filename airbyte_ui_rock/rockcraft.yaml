@@ -5,8 +5,8 @@ name: airbyte-ui
 summary: Airbyte UI rock
 description: Airbyte UI OCI image for the Airbyte UI charm
 version: "1.4.0"
-build-base: ubuntu@22.04
-base: ubuntu@22.04
+build-base: ubuntu@24.04
+base: ubuntu@24.04
 license: Apache-2.0
 platforms:
   amd64:
@@ -38,11 +38,12 @@ parts:
       - base-files_base
     overlay-packages:
       - bash
+      - bash_bins
     override-build: |
       craftctl default
       groupadd --root ${CRAFT_PART_INSTALL} nginx
-      # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
-      useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
+      useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+      # useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
       # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
 
   nginx:
