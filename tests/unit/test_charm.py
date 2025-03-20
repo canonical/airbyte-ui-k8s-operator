@@ -134,6 +134,7 @@ class TestCharm(TestCase):
                     "command": "./docker-entrypoint.sh nginx",
                     "startup": "enabled",
                     "override": "replace",
+                    "user": "nginx",
                     "environment": {
                         "AIRBYTE_VERSION": AIRBYTE_VERSION,
                         "API_URL": "/api/v1/",
