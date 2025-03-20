@@ -45,6 +45,8 @@ parts:
 
       ls /etc
       ls /etc/nginx
+      ls ${CRAFT_PART_INSTALL}/etc
+      ls ${CRAFT_PART_INSTALL}/etc/nginx
       # useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
       # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
 
