@@ -31,23 +31,24 @@ environment:
 # run_user: _daemon_
 
 parts:
-  # nginx-user:
-  #   plugin: nil
-  #   stage-packages:
-  #     - base-passwd_data
-  #     - base-files_base
-  #   override-build: |
-  #     # groupadd --system nginx
-  #     # useradd --system --no-create-home --home /var/cache/nginx --shell /usr/sbin/nologin --gid nginx nginx
-  #     # useradd -M -U -r nginx
-  #     craftctl default
-  #     groupadd --root ${CRAFT_PART_INSTALL} nginx
-  #     useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+  nginx-user:
+    plugin: nil
+    stage-packages:
+      - base-passwd_data
+      - base-files_base
+    overlay-packages:
+      - bash
+    override-build: |
+      craftctl default
+      groupadd --root ${CRAFT_PART_INSTALL} nginx
+      # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+      useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
+      # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
 
   nginx:
     plugin: autotools
-    # after:
-      # - nginx-user
+    after:
+      - nginx-user
     source: https://nginx.org/download/nginx-1.23.3.tar.gz
     build-packages:
       - libgd-dev
@@ -73,24 +74,9 @@ parts:
       - --with-stream=dynamic
       - --with-http_addition_module
       - --with-http_mp4_module
-    # override-build: |
-      # craftctl default
-      # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
-
-  nginx-user:
-    plugin: nil
-    after: [nginx]
-    stage-packages:
-      - base-passwd_data
-      - base-files_base
-    overlay-packages:
-      - bash
     override-build: |
-      craftctl default
-      groupadd --root ${CRAFT_PART_INSTALL} nginx
-      # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
-      useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
-      # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
+      # craftctl default
+      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
 
   config:
     plugin: dump
