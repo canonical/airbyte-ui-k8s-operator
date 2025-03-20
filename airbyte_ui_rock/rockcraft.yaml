@@ -44,8 +44,8 @@ parts:
       # groupadd --root ${CRAFT_PART_INSTALL} nginx
       # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
 
-      addgroup --root ${CRAFT_PART_INSTALL} nginx
-      adduser --quiet --gecos "" --disabled-password --home /home/nginx --shell /bin/bash --ingroup nginx --root ${CRAFT_PART_INSTALL} nginx
+      chroot ${CRAFT_PART_INSTALL} addgroup --quiet nginx
+      chroot ${CRAFT_PART_INSTALL} adduser --quiet --disabled-password --gecos "" --home /home/nginx --shell /bin/bash --ingroup nginx nginx
 
       ls /etc
       ls /etc/nginx
