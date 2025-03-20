@@ -50,6 +50,7 @@ parts:
       ls ${CRAFT_PART_INSTALL}/etc/nginx
       # useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
       rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
+      id -u nginx
     override-prime: |
       craftctl default
       echo "nginx:x:101:101::/home/nginx:/bin/bash" >> ${CRAFT_PRIME}/etc/passwd
