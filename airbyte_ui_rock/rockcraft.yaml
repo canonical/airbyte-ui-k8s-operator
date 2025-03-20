@@ -38,6 +38,7 @@ parts:
     stage-packages:
       - base-passwd_data
       - base-files_base
+      - nginx
     override-build: |
       craftctl default
       groupadd --root ${CRAFT_PART_INSTALL} nginx
