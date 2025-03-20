@@ -42,6 +42,9 @@ parts:
       craftctl default
       groupadd --root ${CRAFT_PART_INSTALL} nginx
       useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+
+      ls /etc
+      ls /etc/nginx
       # useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
       # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
 
