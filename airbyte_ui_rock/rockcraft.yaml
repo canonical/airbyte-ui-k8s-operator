@@ -41,8 +41,11 @@ parts:
       - nginx
     override-build: |
       craftctl default
-      groupadd --root ${CRAFT_PART_INSTALL} nginx
-      useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+      # groupadd --root ${CRAFT_PART_INSTALL} nginx
+      # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
+
+      addgroup --root ${CRAFT_PART_INSTALL} nginx
+      adduser --quiet --gecos "" --disabled-password --home /home/nginx --shell /bin/bash --ingroup nginx --root ${CRAFT_PART_INSTALL} nginx
 
       ls /etc
       ls /etc/nginx
@@ -50,6 +53,7 @@ parts:
       ls ${CRAFT_PART_INSTALL}/etc/nginx
       # useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
       rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
+      grep nginx ${CRAFT_PART_INSTALL}/etc/passwd
       id -u nginx
     override-prime: |
       craftctl default
