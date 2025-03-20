@@ -54,7 +54,7 @@ parts:
       craftctl default
       echo "nginx:x:101:101::/home/nginx:/bin/bash" >> ${CRAFT_PRIME}/etc/passwd
       echo "nginx:x:101:" >> ${CRAFT_PRIME}/etc/group
-    stage:
+    prime:
       - etc/passwd
       - etc/group
       - etc/nginx
