@@ -36,8 +36,8 @@ parts:
     source-type: local
     source: .
     stage-packages:
-      - base-passwd_data
-      - base-files_base
+      - base-passwd
+      - base-files
       - nginx
     override-build: |
       craftctl default
