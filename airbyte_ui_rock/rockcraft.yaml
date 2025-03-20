@@ -90,7 +90,7 @@ parts:
       groupadd --root ${CRAFT_PART_INSTALL} nginx
       # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
       useradd -d /home/nginx --root ${CRAFT_PART_INSTALL} -g nginx nginx
-      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
+      # rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
 
   config:
     plugin: dump
