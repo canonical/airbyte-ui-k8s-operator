@@ -44,6 +44,12 @@ parts:
       # groupadd --root ${CRAFT_PART_INSTALL} nginx
       # useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
 
+      cp /usr/sbin/addgroup ${CRAFT_PART_INSTALL}/usr/sbin/
+      cp /usr/sbin/adduser ${CRAFT_PART_INSTALL}/usr/sbin/
+
+      ldd /usr/sbin/addgroup | awk '{print $3}' | xargs -I '{}' cp '{}' ${CRAFT_PART_INSTALL}/lib/x86_64-linux-gnu/
+      ldd /usr/sbin/adduser | awk '{print $3}' | xargs -I '{}' cp '{}' ${CRAFT_PART_INSTALL}/lib/x86_64-linux-gnu/
+
       chroot ${CRAFT_PART_INSTALL} addgroup --quiet nginx
       chroot ${CRAFT_PART_INSTALL} adduser --quiet --disabled-password --gecos "" --home /home/nginx --shell /bin/bash --ingroup nginx nginx
 
