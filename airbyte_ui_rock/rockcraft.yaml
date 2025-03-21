@@ -73,6 +73,7 @@ parts:
       - etc/passwd
       - etc/group
       - etc/nginx
+      - usr/sbin/nginx
 
   config:
     plugin: dump
@@ -197,6 +198,7 @@ parts:
       chmod -R g+w /etc/nginx
 
       which envsubst
+      which nginx
 
       cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/envsubst
     # organize:
