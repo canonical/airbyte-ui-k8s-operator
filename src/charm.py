@@ -209,7 +209,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "./docker-entrypoint.sh nginx",
+                    "command": "nginx -c /etc/nginx/nginx.conf",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the

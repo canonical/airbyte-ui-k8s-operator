@@ -131,7 +131,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "./docker-entrypoint.sh nginx",
+                    "command": "nginx -c /etc/nginx/nginx.conf",
                     "startup": "enabled",
                     "override": "replace",
                     "user": "nginx",
