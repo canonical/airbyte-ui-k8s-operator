@@ -199,8 +199,8 @@ parts:
       which envsubst
 
       cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/envsubst
-    organize:
-      envsubst: bin/envsubst
+    # organize:
+      # envsubst: bin/envsubst
     stage:
       - etc/nginx/templates/default.conf.template
       - usr/share/nginx/html
