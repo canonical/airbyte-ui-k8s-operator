@@ -191,17 +191,20 @@ parts:
       chown -R $NGINX_UID:nginx /etc/nginx
       chmod -R g+w /etc/nginx
 
-
       which envsubst
       which nginx
 
       cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/envsubst
-    # organize:
-      # envsubst: bin/envsubst
+      cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/nginx
+    organize:
+      envsubst: bin/envsubst
+      nginx: sbin/nginx
     stage:
       - etc/passwd
       - etc/group
       - etc/nginx
+      - sbin/nginx
+      # - nginx
       # - etc/nginx/templates/default.conf.template
       - usr/share/nginx/html
       - docker-entrypoint.sh
