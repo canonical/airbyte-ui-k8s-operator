@@ -15,7 +15,7 @@ services:
   nginx:
     override: replace
     summary: "NGINX service to serve Airbyte WebApp"
-    command: "./docker-entrypoint.sh nginx -c /etc/nginx/nginx.conf"
+    command: "./docker-entrypoint.sh nginx"
     startup: enabled
 
 environment:
@@ -28,19 +28,14 @@ parts:
   config:
     plugin: dump
     source: files
-    # override-build: |
-    #   mkdir -p ${CRAFT_PART_INSTALL}/etc/nginx/conf.d
-
-    #   # Update nginx configuration files (inside the install tree)
-    #   sed -i 's,listen       80;,listen       8080;,' ./default.conf
-    #   sed -i 's,/var/run/nginx.pid,/tmp/nginx.pid,' ./nginx.conf
-    #   sed -i "/^http {/a \    proxy_temp_path /tmp/proxy_temp;\n    client_body_temp_path /tmp/client_temp;\n    fastcgi_temp_path /tmp/fastcgi_temp;\n    uwsgi_temp_path /tmp/uwsgi_temp;\n    scgi_temp_path /tmp/scgi_temp;\n" ./nginx.conf
     organize:
       nginx.conf: etc/nginx/nginx.conf
       default.conf: etc/nginx/conf.d/default.conf
+      mime.types: etc/nginx/mime.types
     stage:
       - etc/nginx/nginx.conf
       - etc/nginx/conf.d/default.conf
+      - etc/nginx/mime.types
 
   patches:
     plugin: dump
@@ -119,30 +114,23 @@ parts:
 
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
 
-      mkdir -p ${CRAFT_PART_INSTALL}/docker-entrypoint.d
       mkdir -p ${CRAFT_PART_INSTALL}/etc/nginx/templates
       mkdir -p ${CRAFT_PART_INSTALL}/etc/nginx/conf.d
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
 
-      cp -r ./docker/airbyte-nginx/alpine-slim/10-listen-on-ipv6-by-default.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/
-      cp -r ./docker/airbyte-nginx/alpine-slim/15-local-resolvers.envsh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/
-      cp -r ./docker/airbyte-nginx/alpine-slim/20-envsubst-on-templates.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/
-      cp -r ./docker/airbyte-nginx/alpine-slim/30-tune-worker-processes.sh ${CRAFT_PART_INSTALL}/docker-entrypoint.d/
       cp -r ./docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh ${CRAFT_PART_INSTALL}/
-
-      cp -r ./airbyte-webapp/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
 
       # Set permissions
-      chown -R $(id -u nginx):nginx ${CRAFT_PART_INSTALL}/var/cache/nginx
-      chmod -R g+w ${CRAFT_PART_INSTALL}/var/cache/nginx
-      chown -R $(id -u nginx):nginx ${CRAFT_PART_INSTALL}/etc/nginx
-      chmod -R g+w ${CRAFT_PART_INSTALL}/etc/nginx
+      chown -R $(id -u nginx):nginx ${CRAFT_STAGE}/var/cache/nginx
+      chmod -R g+w ${CRAFT_STAGE}/var/cache/nginx
+      chown -R $(id -u nginx):nginx ${CRAFT_STAGE}/etc/nginx
+      chmod -R g+w ${CRAFT_STAGE}/etc/nginx
 
-      # Copy binaries
       cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/bin/envsubst
       cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
+
     stage:
       - etc/passwd
       - etc/group
@@ -150,6 +138,5 @@ parts:
       - var/cache/nginx
       - usr/share/nginx/html
       - docker-entrypoint.sh
-      - docker-entrypoint.d
       - bin/envsubst
       - sbin/nginx
