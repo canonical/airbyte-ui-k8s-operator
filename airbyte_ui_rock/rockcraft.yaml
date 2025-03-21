@@ -209,4 +209,4 @@ parts:
       - etc/passwd
       - etc/group
       - etc/nginx
-      - usr/sbin/nginx
+      # - usr/sbin/nginx
