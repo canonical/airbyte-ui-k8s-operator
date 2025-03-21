@@ -123,8 +123,8 @@ parts:
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
 
       # Set permissions
-      chown -R $(id -u nginx):nginx ${CRAFT_STAGE}/var/cache/nginx
-      chmod -R g+w ${CRAFT_STAGE}/var/cache/nginx
+      chown -R $(id -u nginx):nginx ${CRAFT_PART_INSTALL}/var/cache/nginx
+      chmod -R g+w ${CRAFT_PART_INSTALL}/var/cache/nginx
       chown -R $(id -u nginx):nginx ${CRAFT_STAGE}/etc/nginx
       chmod -R g+w ${CRAFT_STAGE}/etc/nginx
 
