@@ -149,7 +149,7 @@ parts:
       cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/bin/envsubst
       cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
     stage:
-      - etc/nginx
+      - etc/nginx/conf.d
       - var/cache/nginx
       - usr/share/nginx/html
       - docker-entrypoint.sh
