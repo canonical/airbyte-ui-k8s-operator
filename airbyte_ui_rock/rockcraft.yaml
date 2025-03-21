@@ -199,14 +199,16 @@ parts:
     # organize:
       # envsubst: bin/envsubst
     stage:
+      - etc/passwd
+      - etc/group
       - etc/nginx
       # - etc/nginx/templates/default.conf.template
       - usr/share/nginx/html
       - docker-entrypoint.sh
       - docker-entrypoint.d
       - bin/envsubst
-    prime:
-      - etc/passwd
-      - etc/group
-      - etc/nginx
+    # prime:
+    #   - etc/passwd
+    #   - etc/group
+    #   - etc/nginx
       # - usr/sbin/nginx
