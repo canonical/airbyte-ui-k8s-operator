@@ -45,8 +45,8 @@ parts:
       groupadd --root ${CRAFT_PART_INSTALL} nginx
       useradd -d /home/nginx -s /bin/bash --root ${CRAFT_PART_INSTALL} -g nginx nginx
 
-     groupadd nginx
-     useradd -d /home/nginx -s /bin/bash -g nginx nginx
+      groupadd nginx
+      useradd -d /home/nginx -s /bin/bash -g nginx nginx
 
       # cp /usr/sbin/addgroup ${CRAFT_PART_INSTALL}/usr/sbin/
       # cp /usr/sbin/adduser ${CRAFT_PART_INSTALL}/usr/sbin/
