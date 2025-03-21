@@ -134,11 +134,6 @@ parts:
       cp -r ./airbyte-webapp/nginx/default.conf.template ${CRAFT_PART_INSTALL}/etc/nginx/templates
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
 
-      # Update nginx configuration files (inside the install tree)
-      # sed -i 's,listen       80;,listen       8080;,' ${CRAFT_PART_INSTALL}/etc/nginx/conf.d/default.conf
-      # sed -i 's,/var/run/nginx.pid,/tmp/nginx.pid,' ${CRAFT_PART_INSTALL}/etc/nginx/nginx.conf
-      # sed -i "/^http {/a \    proxy_temp_path /tmp/proxy_temp;\n    client_body_temp_path /tmp/client_temp;\n    fastcgi_temp_path /tmp/fastcgi_temp;\n    uwsgi_temp_path /tmp/uwsgi_temp;\n    scgi_temp_path /tmp/scgi_temp;\n" ${CRAFT_PART_INSTALL}/etc/nginx/nginx.conf
-
       # Set permissions
       chown -R $(id -u nginx):nginx ${CRAFT_PART_INSTALL}/var/cache/nginx
       chmod -R g+w ${CRAFT_PART_INSTALL}/var/cache/nginx
@@ -149,6 +144,8 @@ parts:
       cp -r /usr/bin/envsubst ${CRAFT_PART_INSTALL}/bin/envsubst
       cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
     stage:
+      - etc/passwd
+      - etc/group
       - etc/nginx/conf.d
       - var/cache/nginx
       - usr/share/nginx/html
