@@ -12,6 +12,7 @@ import requests
 from helpers import APP_NAME_AIRBYTE_UI, gen_patch_getaddrinfo, get_unit_url
 from pytest_operator.plugin import OpsTest
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
@@ -55,9 +56,10 @@ class TestDeployment:
 
             logging.info("Integration test: Error message displayed? %s", error_message.is_displayed())
             assert not error_message.is_displayed()
-
+        except TimeoutException:
+            logging.info("Integration test: No error message found.")
         except Exception as e:
-            logging.info("Test Failed: %s", e)
+            logging.info("Integration test failed: %s", e)
             assert False
         finally:
             driver.quit()
