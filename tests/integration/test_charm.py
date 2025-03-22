@@ -28,7 +28,7 @@ class TestDeployment:
 
     async def test_basic_client(self, ops_test: OpsTest):
         """Perform GET request on the Airbyte UI host."""
-        url = await get_unit_url(ops_test, APP_NAME_AIRBYTE_UI, 0, 8080)
+        url = await get_unit_url(ops_test, APP_NAME_AIRBYTE_UI, 0, 80)
         logger.info("curling app address: %s", url)
 
         response = requests.get(url, timeout=300)
