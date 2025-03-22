@@ -10,12 +10,12 @@ license: Apache-2.0
 platforms:
   amd64:
 
-services:
-  nginx:
-    override: replace
-    summary: "NGINX service to serve Airbyte WebApp"
-    command: "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
-    startup: enabled
+# services:
+#   nginx:
+#     override: replace
+#     summary: "NGINX service to serve Airbyte WebApp"
+#     command: "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
+#     startup: enabled
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
@@ -110,7 +110,7 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
       mkdir -p ${CRAFT_PART_INSTALL}/var/log/nginx
 
-      cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
+      cp -r ./airbyte-webapp/build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
     stage:
       - var/log/nginx
