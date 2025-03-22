@@ -109,10 +109,12 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
       mkdir -p ${CRAFT_PART_INSTALL}/var/log/nginx
+      mkdir -p ${CRAFT_PART_INSTALL}/var/lib/nginx/body
 
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
     stage:
+      - var/lib/nginx/body
       - var/log/nginx
       - var/cache/nginx
       - usr/share/nginx/html
