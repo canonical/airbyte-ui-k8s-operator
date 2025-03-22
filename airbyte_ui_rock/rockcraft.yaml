@@ -118,19 +118,14 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/etc/nginx/conf.d
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
+      mkdir -p ${CRAFT_PART_INSTALL}/var/log/nginx
+
+      # Set ownership to the nginx user (replace 584792 if using a different UID)
+      chown -R $(id -u nginx):nginx ${CRAFT_PART_INSTALL}/var/log/nginx
+      chmod -R g+w ${CRAFT_PART_INSTALL}/var/log/nginx
 
       cp -r ./docker/airbyte-nginx/alpine-slim/docker-entrypoint.sh ${CRAFT_PART_INSTALL}/
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-
-      # TEMPLATE_DIR=${CRAFT_STAGE}/etc/nginx/templates
-      # OUTPUT_DIR=${CRAFT_PART_INSTALL}/etc/nginx/conf.d
-
-      # for template in "$TEMPLATE_DIR"/*.template; do
-      #   filename=$(basename "$template" .template)
-      #   echo "Rendering $template -> $OUTPUT_DIR/$filename"
-      #   envsubst < "$template" > "$OUTPUT_DIR/$filename"
-      #   cat $OUTPUT_DIR/$filename
-      # done
 
       # Set permissions
       chown -R $(id -u nginx):nginx ${CRAFT_PART_INSTALL}/var/cache/nginx
@@ -146,6 +141,7 @@ parts:
       - etc/group
       - etc/nginx/conf.d
       - var/cache/nginx
+      - var/log/nginx
       - usr/share/nginx/html
       - docker-entrypoint.sh
       - bin/envsubst
