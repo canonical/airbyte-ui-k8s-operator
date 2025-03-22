@@ -17,8 +17,11 @@ jobs:
       trivy-severity-config: CRITICAL
       pre-run-script: |
         -c "sudo apt update
-            sudo apt install -y chromium-browser chromium-chromedriver
-            sudo snap install chromium
-            sudo apt install -y firefox
-            which geckodriver"
+            sudo apt install -y firefox"
+      # pre-run-script: |
+      #   -c "sudo apt update
+      #       sudo apt install -y chromium-browser chromium-chromedriver
+      #       sudo snap install chromium
+      #       sudo apt install -y firefox
+      #       which geckodriver"
       rockcraft-enable-security-nesting: true

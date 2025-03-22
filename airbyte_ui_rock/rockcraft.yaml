@@ -10,12 +10,12 @@ license: Apache-2.0
 platforms:
   amd64:
 
-# services:
-#   nginx:
-#     override: replace
-#     summary: "NGINX service to serve Airbyte WebApp"
-#     command: "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
-#     startup: enabled
+services:
+  nginx:
+    override: replace
+    summary: "NGINX service to serve Airbyte webapp"
+    command: "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
+    startup: enabled
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
@@ -59,41 +59,41 @@ parts:
       - bash
       - gradle
       - openjdk-21-jdk-headless
-      - npm
-      - libpq-dev
-      - python3-dev
+      # - npm
+      # - libpq-dev
+      # - python3-dev
       - nginx
-      - xxd
-      - tzdata
-      - gettext
-      - gettext-base
+      # - xxd
+      # - tzdata
+      # - gettext
+      # - gettext-base
     build-snaps:
       - docker
     stage-packages:
       - openjdk-21-jdk-headless
-      - libpq-dev
-      - gcc
-      - libc6-dev
-      - make
-      - libssl-dev
-      - libpcre2-dev
-      - zlib1g-dev
-      - linux-headers-generic
+      # - libpq-dev
+      # - gcc
+      # - libc6-dev
+      # - make
+      # - libssl-dev
+      # - libpcre2-dev
+      # - zlib1g-dev
+      # - linux-headers-generic
       - bash
-      - findutils
-      - gettext
-      - gettext-base
-      - python3-dev
-      - jq
-      - curl
-      - tar
-      - gzip
-      - ca-certificates
-      - libpcre3
-      - libssl3
-      - zlib1g
-      - base-passwd
-      - base-files
+      # - findutils
+      # - gettext
+      # - gettext-base
+      # - python3-dev
+      # - jq
+      # - curl
+      # - tar
+      # - gzip
+      # - ca-certificates
+      # - libpcre3
+      # - libssl3
+      # - zlib1g
+      # - base-passwd
+      # - base-files
       - nginx
     override-build: |
       craftctl default
@@ -105,7 +105,6 @@ parts:
 
       cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
 
-      # mkdir -p ${CRAFT_PART_INSTALL}/etc/nginx/conf.d
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
       mkdir -p ${CRAFT_PART_INSTALL}/var/log/nginx
