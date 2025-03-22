@@ -143,7 +143,7 @@ class TestCharm(TestCase):
                         "INTERNAL_API_HOST": f"airbyte-k8s:{INTERNAL_API_PORT}",
                         "CONNECTOR_BUILDER_API_HOST": f"airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}",
                         "KEYCLOAK_INTERNAL_HOST": "localhost",
-                        "PORT": 8080,
+                        "PORT": WEB_UI_PORT,
                     },
                     "on-check-failure": {"up": "ignore"},
                 },
