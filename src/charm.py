@@ -209,13 +209,12 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "nginx -c /etc/nginx/nginx.conf",
+                    "command": "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the
                     # config forces replanning to restart the service.
                     "environment": context,
-                    "user": "nginx",
                     "on-check-failure": {"up": "ignore"},
                 },
             },

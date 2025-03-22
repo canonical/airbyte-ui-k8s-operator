@@ -131,10 +131,9 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "nginx -c /etc/nginx/nginx.conf",
+                    "command": "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf",
                     "startup": "enabled",
                     "override": "replace",
-                    "user": "nginx",
                     "environment": {
                         "AIRBYTE_VERSION": AIRBYTE_VERSION,
                         "API_URL": "/api/v1/",
