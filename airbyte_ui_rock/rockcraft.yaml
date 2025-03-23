@@ -19,9 +19,9 @@ services:
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
-  CDK_PYTHON: /usr/bin/python3.10
-  CDK_ENTRYPOINT: /usr/lib/python3.10/dist-packages/airbyte_cdk/connector_builder/main.py
-  CDK_VERSION: "5.12.0"
+  # CDK_PYTHON: /usr/bin/python3.10
+  # CDK_ENTRYPOINT: /usr/lib/python3.10/dist-packages/airbyte_cdk/connector_builder/main.py
+  # CDK_VERSION: "5.12.0"
 
 parts:
   stage-nginx-files:
@@ -59,7 +59,7 @@ parts:
       - bash
       - gradle
       - openjdk-21-jdk-headless
-      # - nginx
+      - nginx
     build-snaps:
       - docker
     stage-packages:
@@ -82,13 +82,13 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/var/lib/nginx/body
 
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-      # cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
+      cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
     stage:
       - var/lib/nginx/body
       - var/log/nginx
       - var/cache/nginx
       - usr/share/nginx/html
-      # - sbin/nginx
+      - sbin/nginx
 
   # stage-build-files:
   #   plugin: nil
