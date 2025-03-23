@@ -3,7 +3,7 @@
 name: airbyte-ui
 summary: Airbyte UI rock
 description: Airbyte UI OCI image for the Airbyte UI charm
-version: "1.4.0"
+version: "1.5.0"
 build-base: ubuntu@24.04
 base: ubuntu@24.04
 license: Apache-2.0
@@ -11,7 +11,7 @@ platforms:
   amd64:
 
 services:
-  nginx:
+  airbyte-webapp:
     override: replace
     summary: "NGINX service to serve Airbyte webapp"
     command: "nginx -g 'daemon off;'"
@@ -19,9 +19,6 @@ services:
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
-  # CDK_PYTHON: /usr/bin/python3.10
-  # CDK_ENTRYPOINT: /usr/lib/python3.10/dist-packages/airbyte_cdk/connector_builder/main.py
-  # CDK_VERSION: "5.12.0"
 
 parts:
   stage-nginx-files:
@@ -51,7 +48,7 @@ parts:
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git
     source-type: git
-    source-tag: v1.4.0
+    source-tag: v1.5.0
     build-packages:
       - jq
       - curl
@@ -63,18 +60,13 @@ parts:
     build-snaps:
       - docker
     stage-packages:
-      # - openjdk-21-jdk-headless
       - bash
       - nginx
     override-build: |
-      # craftctl default
-
       git apply ${CRAFT_STAGE}/patches/*.patch
 
       ./gradlew :oss:airbyte-webapp:assemble --continue
       ./gradlew --stop
-
-      # cp -r ./airbyte-webapp ${CRAFT_PART_INSTALL}/airbyte-webapp
 
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
@@ -89,24 +81,3 @@ parts:
       - var/cache/nginx
       - usr/share/nginx/html
       - sbin/nginx
-
-  # stage-build-files:
-  #   plugin: nil
-  #   # build-packages:
-  #     # - nginx
-  #   stage-packages:
-  #     - nginx
-  #   override-build:
-  #     mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-  #     mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
-  #     mkdir -p ${CRAFT_PART_INSTALL}/var/log/nginx
-  #     mkdir -p ${CRAFT_PART_INSTALL}/var/lib/nginx/body
-
-  #     cp -r ${CRAFT_STAGE}/airbyte-webapp/build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-  #     # cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
-  #   stage:
-  #     - var/lib/nginx/body
-  #     - var/log/nginx
-  #     - var/cache/nginx
-  #     - usr/share/nginx/html
-  #     # - sbin/nginx

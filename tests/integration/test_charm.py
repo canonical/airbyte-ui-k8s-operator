@@ -42,11 +42,10 @@ class TestDeployment:
         driver = webdriver.Firefox(service=service, options=options)
 
         try:
-            # Open React app
             driver.get(url)
             logging.info("Integration test: Page loaded successfully.")
 
-            # Wait for the <p> element with partial text match
+            # Wait for error message to appear
             wait = WebDriverWait(driver, 120)
             error_message = wait.until(
                 expected_conditions.presence_of_element_located(
