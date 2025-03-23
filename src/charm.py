@@ -209,7 +209,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf",
+                    "command": "nginx -g 'daemon off;'",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the

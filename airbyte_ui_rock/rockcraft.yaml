@@ -14,7 +14,7 @@ services:
   nginx:
     override: replace
     summary: "NGINX service to serve Airbyte webapp"
-    command: "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
+    command: "nginx -g 'daemon off;'"
     startup: enabled
 
 environment:
@@ -24,7 +24,7 @@ environment:
   CDK_VERSION: "5.12.0"
 
 parts:
-  config:
+  stage-nginx-files:
     plugin: dump
     source: files
     organize:
@@ -46,8 +46,8 @@ parts:
     prime:
       - "-*"
 
-  pull-airbyte-repo:
-    after: [patches, config]
+  build-airbyte-webapp:
+    after: [patches, stage-nginx-files]
     plugin: dump
     source: https://github.com/airbytehq/airbyte-platform.git
     source-type: git
@@ -59,51 +59,22 @@ parts:
       - bash
       - gradle
       - openjdk-21-jdk-headless
-      # - npm
-      # - libpq-dev
-      # - python3-dev
-      - nginx
-      # - xxd
-      # - tzdata
-      # - gettext
-      # - gettext-base
+      # - nginx
     build-snaps:
       - docker
     stage-packages:
-      - openjdk-21-jdk-headless
-      # - libpq-dev
-      # - gcc
-      # - libc6-dev
-      # - make
-      # - libssl-dev
-      # - libpcre2-dev
-      # - zlib1g-dev
-      # - linux-headers-generic
+      # - openjdk-21-jdk-headless
       - bash
-      # - findutils
-      # - gettext
-      # - gettext-base
-      # - python3-dev
-      # - jq
-      # - curl
-      # - tar
-      # - gzip
-      # - ca-certificates
-      # - libpcre3
-      # - libssl3
-      # - zlib1g
-      # - base-passwd
-      # - base-files
       - nginx
     override-build: |
-      craftctl default
+      # craftctl default
 
       git apply ${CRAFT_STAGE}/patches/*.patch
 
-      ./gradlew :oss:airbyte-webapp:assemble --continue --max-workers 1
+      ./gradlew :oss:airbyte-webapp:assemble --continue
       ./gradlew --stop
 
-      cp -r . ${CRAFT_PART_INSTALL}/airbyte-platform
+      # cp -r ./airbyte-webapp ${CRAFT_PART_INSTALL}/airbyte-webapp
 
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
       mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
@@ -111,10 +82,31 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/var/lib/nginx/body
 
       cp -r ./airbyte-webapp/build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
-      cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
+      # cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
     stage:
       - var/lib/nginx/body
       - var/log/nginx
       - var/cache/nginx
       - usr/share/nginx/html
-      - sbin/nginx
+      # - sbin/nginx
+
+  # stage-build-files:
+  #   plugin: nil
+  #   # build-packages:
+  #     # - nginx
+  #   stage-packages:
+  #     - nginx
+  #   override-build:
+  #     mkdir -p ${CRAFT_PART_INSTALL}/usr/share/nginx/html
+  #     mkdir -p ${CRAFT_PART_INSTALL}/var/cache/nginx
+  #     mkdir -p ${CRAFT_PART_INSTALL}/var/log/nginx
+  #     mkdir -p ${CRAFT_PART_INSTALL}/var/lib/nginx/body
+
+  #     cp -r ${CRAFT_STAGE}/airbyte-webapp/build/airbyte/docker/bin/build/* ${CRAFT_PART_INSTALL}/usr/share/nginx/html
+  #     # cp -r /usr/sbin/nginx ${CRAFT_PART_INSTALL}/sbin/nginx
+  #   stage:
+  #     - var/lib/nginx/body
+  #     - var/log/nginx
+  #     - var/cache/nginx
+  #     - usr/share/nginx/html
+  #     # - sbin/nginx

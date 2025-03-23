@@ -131,7 +131,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "nginx -g 'daemon off;' -c /etc/nginx/nginx.conf",
+                    "command": "nginx -g 'daemon off;'",
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
