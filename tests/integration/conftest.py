@@ -50,7 +50,7 @@ async def deploy(ops_test: OpsTest, charm: str, charm_image: str):
 
     asyncio.gather(
         ops_test.model.deploy(charm, resources=resources, application_name=APP_NAME_AIRBYTE_UI),
-        ops_test.model.deploy(APP_NAME_AIRBYTE_SERVER, trust=True, channel="edge"),
+        ops_test.model.deploy(APP_NAME_AIRBYTE_SERVER, trust=True, channel="edge", revision=6),
         ops_test.model.deploy(
             APP_NAME_TEMPORAL_SERVER,
             channel="edge",

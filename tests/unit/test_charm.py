@@ -131,7 +131,7 @@ class TestCharm(TestCase):
             "services": {
                 APP_NAME: {
                     "summary": APP_NAME,
-                    "command": "/usr/bin/pnpm -C airbyte-webapp start oss-k8s",
+                    "command": "nginx -g 'daemon off;'",
                     "startup": "enabled",
                     "override": "replace",
                     "environment": {
@@ -143,12 +143,10 @@ class TestCharm(TestCase):
                         "INTERNAL_API_HOST": f"airbyte-k8s:{INTERNAL_API_PORT}",
                         "CONNECTOR_BUILDER_API_HOST": f"airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}",
                         "KEYCLOAK_INTERNAL_HOST": "localhost",
-                        "PORT": 8080,
-                        "REACT_APP_API_URL": f"http://airbyte-k8s:{INTERNAL_API_PORT}/api",
-                        "REACT_APP_CONNECTOR_BUILDER_API_URL": f"http://airbyte-k8s:{CONNECTOR_BUILDER_API_PORT}/connector-builder-api",
+                        "PORT": WEB_UI_PORT,
                     },
                     "on-check-failure": {"up": "ignore"},
-                }
+                },
             },
             "checks": {
                 "up": {

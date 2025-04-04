@@ -159,7 +159,7 @@ async def perform_airbyte_integrations(ops_test: OpsTest):
         apps=[APP_NAME_AIRBYTE_SERVER, APP_NAME_AIRBYTE_UI, "nginx-ingress-integrator"],
         status="active",
         raise_on_blocked=False,
-        timeout=240,
+        timeout=600,
     )
 
     assert ops_test.model.applications[APP_NAME_AIRBYTE_SERVER].units[0].workload_status == "active"

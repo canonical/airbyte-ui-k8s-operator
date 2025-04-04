@@ -11,6 +11,13 @@ import pytest
 import requests
 from helpers import APP_NAME_AIRBYTE_UI, gen_patch_getaddrinfo, get_unit_url
 from pytest_operator.plugin import OpsTest
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +29,39 @@ class TestDeployment:
 
     async def test_basic_client(self, ops_test: OpsTest):
         """Perform GET request on the Airbyte UI host."""
-        url = await get_unit_url(ops_test, APP_NAME_AIRBYTE_UI, 0, 8080)
+        url = await get_unit_url(ops_test, APP_NAME_AIRBYTE_UI, 0, 80)
         logger.info("curling app address: %s", url)
 
         response = requests.get(url, timeout=300)
         assert response.status_code == 200
+
+        # Test using Selenium
+        options = Options()
+        options.add_argument("--headless")
+        service = Service("/snap/bin/geckodriver")
+        driver = webdriver.Firefox(service=service, options=options)
+
+        try:
+            driver.get(url)
+            logging.info("Integration test: Page loaded successfully.")
+
+            # Wait for error message to appear
+            wait = WebDriverWait(driver, 120)
+            error_message = wait.until(
+                expected_conditions.presence_of_element_located(
+                    (By.XPATH, "//p[contains(text(), 'Sorry, something went wrong.')]")
+                )
+            )
+
+            logging.info("Integration test: Error message displayed? %s", error_message.is_displayed())
+            assert not error_message.is_displayed()
+        except TimeoutException:
+            logging.info("Integration test: No error message found.")
+        except Exception as e:
+            logging.info("Integration test failed: %s", e)
+            assert False
+        finally:
+            driver.quit()
 
     async def test_ingress(self, ops_test: OpsTest):
         """Set external-hostname and test connectivity through ingress."""

@@ -196,8 +196,6 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "CONNECTOR_BUILDER_API_URL": "/connector-builder-api",
             "KEYCLOAK_INTERNAL_HOST": "localhost",
             "PORT": WEB_UI_PORT,
-            "REACT_APP_API_URL": f"http://{server_svc}:{INTERNAL_API_PORT}/api",
-            "REACT_APP_CONNECTOR_BUILDER_API_URL": f"http://{server_svc}:{CONNECTOR_BUILDER_API_PORT}/connector-builder-api",
         }
 
         self.model.unit.set_ports(WEB_UI_PORT)
@@ -211,7 +209,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "services": {
                 self.name: {
                     "summary": self.name,
-                    "command": "/usr/bin/pnpm -C airbyte-webapp start oss-k8s",
+                    "command": "nginx -g 'daemon off;'",
                     "startup": "enabled",
                     "override": "replace",
                     # Including config values here so that a change in the
