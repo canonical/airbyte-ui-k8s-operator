@@ -5,6 +5,7 @@
 """Charm definition and helpers."""
 
 import logging
+import os
 
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from ops import main, pebble
@@ -197,6 +198,17 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
             "KEYCLOAK_INTERNAL_HOST": "localhost",
             "PORT": WEB_UI_PORT,
         }
+
+        proxy_vars = {
+            "HTTP_PROXY": "JUJU_CHARM_HTTP_PROXY",
+            "HTTPS_PROXY": "JUJU_CHARM_HTTPS_PROXY",
+            "NO_PROXY": "JUJU_CHARM_NO_PROXY",
+        }
+
+        for key, env_var in proxy_vars.items():
+            value = os.environ.get(env_var)
+            if value:
+                context.update({key: value})
 
         self.model.unit.set_ports(WEB_UI_PORT)
         container = self.unit.get_container(self.name)
