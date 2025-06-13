@@ -19,6 +19,7 @@ services:
 
 environment:
   JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
+  VERSION: "1.5.0"
 
 parts:
   stage-nginx-files:
