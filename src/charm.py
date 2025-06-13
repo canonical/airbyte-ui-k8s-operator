@@ -146,7 +146,7 @@ class AirbyteUIK8sOperatorCharm(CharmBase):
         """Restart Airbyte ui action handler.
 
         Args:
-            event:The event triggered by the restart action
+            event:The event triggered by the restart action.
         """
         container = self.unit.get_container(self.name)
         if not container.can_connect():
