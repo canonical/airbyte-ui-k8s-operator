@@ -1,6 +1,9 @@
 [![Charmhub Badge](https://charmhub.io/airbyte-ui-k8s/badge.svg)](https://charmhub.io/airbyte-ui-k8s)
 [![Release Edge](https://github.com/canonical/airbyte-ui-k8s-operator/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/airbyte-ui-k8s-operator/actions/workflows/publish_charm.yaml)
 
+> ⚠️ **This project has moved!**
+> Airbyte UI functionality has been consolidated into the `airbyte-k8s-operator` repository that can be found [here](https://github.com/canonical/airbyte-k8s-operator).
+
 # Airbyte UI K8s Operator
 
 This is the Kubernetes Python Operator for the
